@@ -18,6 +18,8 @@
 
 package org.spectral.asm.core
 
+import org.objectweb.asm.ClassReader
+
 /**
  * Represents a collection of [Class] objects loaded from a class path.
  *
@@ -31,10 +33,56 @@ class ClassPool {
     private val classMap = hashMapOf<String, Class>()
 
     /**
-     * Shared classes which may be JVM or library classes referenced within [Class] objects
-     * in the [classMap]. These are loaded via a class provider.
+     * A list of [Class] objects contained in the class map.
      */
-    private val sharedClassMap = hashMapOf<String, Class>()
+    val classes: List<Class> get() = classMap.values.toList()
 
+    /**
+     * Adds a [Class] to this pool.
+     *
+     * @param element Class
+     */
+    fun addClass(element: Class) {
+        if(classMap.containsKey(element.name)) {
+            throw IllegalStateException("Class with name ${element.name} already exists in the pool")
+        }
 
+        element.pool = this
+        classMap[element.name] = element
+    }
+
+    /**
+     * Adds a [Class] from the raw Bytes to this pool.
+     *
+     * @param bytes ByteArray
+     */
+    fun addClass(bytes: ByteArray) {
+        val reader = ClassReader(bytes)
+        val cls = Class()
+
+        reader.accept(cls, ClassReader.SKIP_FRAMES)
+
+        this.addClass(cls)
+    }
+
+    /**
+     * Removes a [Class] from this pool.
+     *
+     * @param element Class
+     */
+    fun removeClass(element: Class) {
+        if(!classMap.containsKey(element.name)) {
+            throw NoSuchElementException("No class with name ${element.name} found in the pool.")
+        }
+
+        classMap.remove(element.name)
+    }
+
+    /**
+     * Gets a [Class] with a given class name.
+     *
+     * @param name String
+     * @return Class?
+     */
+    operator fun get(name: String): Class? = classMap[name]
 }
