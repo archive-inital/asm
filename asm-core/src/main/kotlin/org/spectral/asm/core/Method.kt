@@ -21,6 +21,7 @@ package org.spectral.asm.core
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes.ASM9
 import org.objectweb.asm.Type
+import org.spectral.asm.core.code.Code
 import java.lang.reflect.Modifier
 
 /**
@@ -76,6 +77,11 @@ class Method(val owner: Class) : MethodVisitor(ASM9) {
     }
 
     /**
+     * The code object holding instruction related data for this method.
+     */
+    val code = Code(this)
+
+    /**
      * Whether the method is a static method.
      */
     val isStatic: Boolean get() = Modifier.isStatic(access)
@@ -89,7 +95,31 @@ class Method(val owner: Class) : MethodVisitor(ASM9) {
      * Initializes the method refs.
      */
     internal fun init() {
+        /*
+         * Initialize the code instance.
+         */
+        code.init()
+    }
 
+    /*
+     * VISITOR METHODS
+     */
+
+    override fun visitCode() {
+        /*
+         * Nothing to do.
+         */
+    }
+
+    override fun visitMaxs(maxStack: Int, maxLocals: Int) {
+        code.maxStack = maxStack
+        code.maxLocals = maxLocals
+    }
+
+    override fun visitEnd() {
+        /*
+         * Nothing to do.
+         */
     }
 
     override fun toString(): String {
