@@ -620,7 +620,38 @@ object MethodAnalyzer {
                     currentFrame = ReturnFrame(insn.opcode, null)
                     complete = true
                 }
-
+                GETSTATIC -> {
+                    val cast = insn as FieldInstruction
+                    val type = Type.getType(cast.field.desc)
+                    val klass = PrimitiveUtils.forName(type.className)
+                    currentFrame = FieldFrame(insn.opcode, cast.field.owner.name, cast.field.name, cast.field.desc, null, null)
+                    if(klass == null) {
+                        stack.push(StackContext(Any::class, currentFrame, type.internalName))
+                    } else {
+                        stack.push(StackContext(klass, currentFrame))
+                    }
+                }
+                PUTSTATIC -> {
+                    val cast = insn as FieldInstruction
+                    currentFrame = FieldFrame(insn.opcode, cast.field.owner.name, cast.field.name, cast.field.desc, null, stack.pop().value!!)
+                }
+                GETFIELD -> {
+                    val cast = insn as FieldInstruction
+                    val type = Type.getType(cast.field.desc)
+                    val klass = PrimitiveUtils.forName(type.className)
+                    currentFrame = FieldFrame(insn.opcode, cast.field.owner.name, cast.field.name, cast.field.desc, stack.pop().value!!, null)
+                    if(klass == null) {
+                        stack.push(StackContext(Any::class, currentFrame, type.internalName))
+                    } else {
+                        stack.push(StackContext(klass, currentFrame))
+                    }
+                }
+                PUTFIELD -> {
+                    val cast = insn as FieldInstruction
+                    val obj = stack.pop().value
+                    val instance = stack.pop().value
+                    currentFrame = FieldFrame(insn.opcode, cast.field.owner.name, cast.field.name, cast.field.desc, instance, obj)
+                }
                 ATHROW -> {
                     val throwable = stack.pop().value!!
                     currentFrame = ThrowFrame(throwable)
