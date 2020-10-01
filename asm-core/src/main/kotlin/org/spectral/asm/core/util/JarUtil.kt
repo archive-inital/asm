@@ -67,7 +67,7 @@ object JarUtil {
         val jos = JarOutputStream(FileOutputStream(file))
 
         pool.classes.forEach { cls ->
-            val writer = ClassWriter(ClassWriter.COMPUTE_MAXS)
+            val writer = NonLoadingClassWriter(pool, ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS)
             val verifier = CheckClassAdapter(writer, false)
 
             cls.accept(verifier)

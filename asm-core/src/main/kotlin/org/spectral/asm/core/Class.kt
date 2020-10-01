@@ -23,6 +23,7 @@ import org.objectweb.asm.FieldVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes.ASM9
 import org.spectral.asm.core.reference.ClassRef
+import java.lang.reflect.Modifier
 
 /**
  * Represents an Java class loaded from it's bytecode.
@@ -83,6 +84,16 @@ class Class : ClassVisitor(ASM9) {
      * The fields contained in this class.
      */
     val fields = mutableListOf<Field>()
+
+    /**
+     * Whether this class is an interface class.
+     */
+    val isInterface: Boolean get() = Modifier.isInterface(access)
+
+    /**
+     * Whether this class is an abstract class.
+     */
+    val isAbstract: Boolean get() = Modifier.isAbstract(access)
 
     /**
      * Initialize the class.
