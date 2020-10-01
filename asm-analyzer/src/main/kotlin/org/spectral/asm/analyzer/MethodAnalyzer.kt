@@ -319,6 +319,93 @@ object MethodAnalyzer {
                     locals.assureSize(cast.index)
                     locals[cast.index] = StackContext(ctx.type, currentFrame, ctx.initType)
                 }
+                // Array Stores
+                POP -> {
+                    val ctx = stack.pop()
+                    currentFrame = PopFrame(insn.opcode, ctx.value)
+                }
+                POP2 -> {
+                    val ctx = stack.first()
+                    currentFrame = if(ctx.type == Double::class || ctx.type == Long::class) {
+                        stack.pop()
+                        PopFrame(insn.opcode, ctx.value)
+                    } else {
+                        stack.pop()
+                        val next = stack.pop()
+                        PopFrame(insn.opcode, ctx.value, next.value)
+                    }
+                }
+                DUP -> {
+                    val ctx = stack.first()
+                    currentFrame = DupFrame(insn.opcode, ctx.value)
+                    stack.push(ctx)
+                }
+                DUP_X1 -> {
+                    val ctx = stack.first()
+                    if(ctx.type == Double::class || ctx.type == Long::class) {
+                        throw IllegalStateException()
+                    }
+
+                    stack.add(2, ctx)
+                    currentFrame = DupFrame(insn.opcode, ctx.value)
+                }
+                DUP_X2 -> {
+                    val ctx = stack[1]
+                    val top = stack.first()
+                    currentFrame = DupFrame(insn.opcode, top.value)
+                    if(ctx.type == Double::class || ctx.type == Long::class) {
+                        stack.add(2, stack.first())
+                    } else {
+                        stack.add(3, stack.first())
+                    }
+                }
+                DUP2 -> {
+                    val ctx = stack.first()
+                    currentFrame = if(ctx.type == Double::class || ctx.type == Long::class) {
+                        stack.add(1, ctx)
+                        DupFrame(insn.opcode, ctx.value)
+                    } else {
+                        val top = stack[1]
+                        stack.add(2, ctx)
+                        stack.add(3, top)
+                        DupFrame(insn.opcode, ctx.value, top.value)
+                    }
+                }
+                DUP2_X1 -> {
+                    val ctx = stack.first()
+                    currentFrame = if(ctx.type == Double::class || ctx.type == Long::class) {
+                        stack.add(2, ctx)
+                        DupFrame(insn.opcode, ctx.value)
+                    } else {
+                        val top = stack[1]
+                        stack.add(3, ctx)
+                        stack.add(4, top)
+                        DupFrame(insn.opcode, ctx.value, top.value)
+                    }
+                }
+                DUP2_X2 -> {
+                    var ctx = stack.first()
+                    if(ctx.type == Double::class || ctx.type == Long::class) {
+                        ctx = stack[1]
+                        currentFrame = DupFrame(insn.opcode, stack.first().value)
+                        if(ctx.type == Double::class || ctx.type == Long::class) {
+                            stack.add(2, stack.first())
+                        } else {
+                            stack.add(3, stack.first())
+                        }
+                    } else {
+                        val top = stack[1]
+                        ctx = stack[2]
+                        currentFrame = DupFrame(insn.opcode, stack.first().value, top.value)
+                        if(ctx.type == Double::class || ctx.type == Long::class) {
+                            stack.add(3, stack.first())
+                            stack.add(4, top)
+                        } else {
+                            stack.add(4, stack.first())
+                            stack.add(5, top)
+                        }
+                    }
+                }
             }
 
             /*
