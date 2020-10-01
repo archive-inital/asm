@@ -181,6 +181,20 @@ object MethodAnalyzer {
     }
 
     /**
+     * Executes an array store for a given opcode on the provided stack.
+     *
+     * @param opcode Int
+     * @param stack MutableList<StackContext>
+     * @return Frame
+     */
+    private fun executeArrayStore(opcode: Int, stack: MutableList<StackContext>): Frame {
+        val value = stack.pop().value!!
+        val index = stack.pop().value!!
+        val array = stack.pop().value!!
+        return ArrayStoreFrame(opcode, value, index, array)
+    }
+
+    /**
      * Executes a instruction from a method and updates the provided data maps and analysis result values.
      *
      * @param method Method
@@ -319,7 +333,16 @@ object MethodAnalyzer {
                     locals.assureSize(cast.index)
                     locals[cast.index] = StackContext(ctx.type, currentFrame, ctx.initType)
                 }
-                // Array Stores
+                IASTORE,
+                LASTORE,
+                FASTORE,
+                DASTORE,
+                BASTORE,
+                CASTORE,
+                SASTORE,
+                AASTORE -> {
+                    currentFrame = executeArrayStore(insn.opcode, stack)
+                }
                 POP -> {
                     val ctx = stack.pop()
                     currentFrame = PopFrame(insn.opcode, ctx.value)
