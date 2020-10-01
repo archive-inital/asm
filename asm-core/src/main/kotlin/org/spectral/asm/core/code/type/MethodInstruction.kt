@@ -23,7 +23,7 @@ import org.objectweb.asm.util.Printer
 import org.spectral.asm.core.code.Instruction
 import org.spectral.asm.core.reference.MethodRef
 
-class InvokeMethodInstruction(opcode: Int, val method: MethodRef, val toInterface: Boolean) : Instruction(opcode) {
+class MethodInstruction(opcode: Int, val method: MethodRef, val toInterface: Boolean) : Instruction(opcode) {
 
     override fun accept(visitor: MethodVisitor) {
         visitor.visitMethodInsn(opcode, method.owner.name, method.name, method.desc, toInterface)
