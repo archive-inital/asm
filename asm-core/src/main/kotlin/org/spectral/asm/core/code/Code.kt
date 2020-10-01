@@ -164,6 +164,10 @@ class Code(val method: Method) {
         this.instructions.add(LookupSwitchInstruction(default?.let { getOrCreateLabel(it) }, keys.toList(), labels.map { getOrCreateLabel(it) }.toList()))
     }
 
+    internal fun visitMultiANewArrayInsn(desc: String, dims: Int) {
+        this.instructions.add(MultiNewArrayInstruction(desc, dims))
+    }
+
     internal fun visitMaxs(maxStack: Int, maxLocals: Int) {
         this.maxStack = maxStack
         this.maxLocals = maxLocals
