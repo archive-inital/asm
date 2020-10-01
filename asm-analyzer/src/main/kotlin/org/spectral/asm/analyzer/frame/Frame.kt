@@ -18,6 +18,7 @@
 
 package org.spectral.asm.analyzer.frame
 
+import org.objectweb.asm.util.Printer
 import org.spectral.asm.analyzer.value.Value
 
 /**
@@ -27,6 +28,11 @@ import org.spectral.asm.analyzer.value.Value
  * @constructor
  */
 open class Frame(val opcode: Int) {
+
+    /**
+     * The string name of the opcode represented in this frame.
+     */
+    val insnName: String = Printer.OPCODES.getOrElse(opcode) { "UNKNOWN" }
 
     /**
      * The parent frames which contributed to this frames value.
