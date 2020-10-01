@@ -406,6 +406,13 @@ object MethodAnalyzer {
                         }
                     }
                 }
+                SWAP -> {
+                    val top = stack.pop()
+                    val bottom = stack.pop()
+                    currentFrame = SwapFrame(insn.opcode, top.value, bottom.value)
+                    stack.push(top)
+                    stack.push(bottom)
+                }
             }
 
             /*
