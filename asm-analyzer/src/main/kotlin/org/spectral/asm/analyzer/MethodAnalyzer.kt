@@ -538,6 +538,29 @@ object MethodAnalyzer {
                     val ctx = locals[cast.index]!!
                     currentFrame = LocalFrame(insn.opcode, cast.index, ctx.value)
                 }
+                I2L,
+                F2L,
+                D2L -> {
+                    currentFrame = doCast(insn.opcode, stack, Long::class)
+                }
+                I2F,
+                L2F,
+                D2F -> {
+                    currentFrame = doCast(insn.opcode, stack, Float::class)
+                }
+                I2D,
+                L2D,
+                F2D -> {
+                    currentFrame = doCast(insn.opcode, stack, Double::class)
+                }
+                L2I,
+                D2I,
+                F2I -> {
+                    currentFrame = doCast(insn.opcode, stack, Int::class)
+                }
+                I2B -> currentFrame = doCast(insn.opcode, stack, Byte::class)
+                I2C -> currentFrame = doCast(insn.opcode, stack, Char::class)
+                I2S -> currentFrame = doCast(insn.opcode, stack, Short::class)
             }
 
             /*
