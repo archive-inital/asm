@@ -19,6 +19,8 @@
 package org.spectral.asm.core
 
 import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.FieldVisitor
+import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes.ASM9
 import org.spectral.asm.core.reference.ClassRef
 
@@ -35,7 +37,7 @@ class Class : ClassVisitor(ASM9) {
     /**
      * The name of the class.
      */
-    lateinit var name: String internal set
+    lateinit var name: String
 
     /**
      * The source file name this class was loaded from.
@@ -71,6 +73,16 @@ class Class : ClassVisitor(ASM9) {
      * The classes which implement this class.
      */
     val implementers = mutableListOf<Class>()
+
+    /**
+     * The methods contained in this class.
+     */
+    val methods = mutableListOf<Method>()
+
+    /**
+     * The fields contained in this class.
+     */
+    val fields = mutableListOf<Field>()
 
     /**
      * Initialize the class.
@@ -110,6 +122,30 @@ class Class : ClassVisitor(ASM9) {
 
     override fun visitSource(source: String, debug: String?) {
         this.source = source
+    }
+
+    override fun visitMethod(
+            access: Int,
+            name: String,
+            descriptor: String,
+            signature: String?,
+            exceptions: Array<String>?
+    ): MethodVisitor {
+        val method = Method(this, access, name, descriptor)
+        this.methods.add(method)
+        return method
+    }
+
+    override fun visitField(
+            access: Int,
+            name: String,
+            descriptor: String,
+            signature: String?,
+            value: Any?
+    ): FieldVisitor {
+        val field = Field(this, access, name, descriptor, value)
+        this.fields.add(field)
+        return field
     }
 
     override fun visitEnd() {

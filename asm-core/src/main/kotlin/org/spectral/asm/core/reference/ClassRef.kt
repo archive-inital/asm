@@ -32,6 +32,11 @@ class ClassRef(val name: String) {
 
     var ref: Class? = null
 
+    /**
+     * Init the [ref] object if contained in the pool.
+     *
+     * @param pool ClassPool
+     */
     internal fun init(pool: ClassPool) {
         this.ref = pool[this.name]
     }
