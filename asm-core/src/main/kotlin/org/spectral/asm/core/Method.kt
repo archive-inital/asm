@@ -93,6 +93,16 @@ class Method(val owner: Class) : MethodVisitor(ASM9) {
     val isPrivate: Boolean get() = Modifier.isPrivate(access)
 
     /**
+     * Whether the method is an abstract method.
+     */
+    val isAbstract: Boolean get() = Modifier.isAbstract(access)
+
+    /**
+     * Whether the method is a native method.
+     */
+    val isNative: Boolean get() = Modifier.isNative(access)
+
+    /**
      * Initializes the method refs.
      */
     internal fun init() {
