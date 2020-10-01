@@ -21,6 +21,7 @@ package org.spectral.asm.core.code
 import org.objectweb.asm.MethodVisitor
 import org.spectral.asm.core.Method
 import org.spectral.asm.core.code.type.IncInstruction
+import org.spectral.asm.core.code.type.IntInstruction
 import org.spectral.asm.core.code.type.LdcInstruction
 import org.spectral.asm.core.reference.ClassRef
 import java.util.*
@@ -139,6 +140,10 @@ class Code(val method: Method) {
 
     internal fun visitIincInsn(index: Int, inc: Int) {
         this.instructions.add(IncInstruction(index, inc))
+    }
+
+    internal fun visitIntInsn(opcode: Int, operand: Int) {
+        this.instructions.add(IntInstruction(opcode, operand))
     }
 
     internal fun visitMaxs(maxStack: Int, maxLocals: Int) {
