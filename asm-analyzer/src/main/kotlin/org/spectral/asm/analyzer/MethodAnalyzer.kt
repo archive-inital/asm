@@ -28,10 +28,7 @@ import org.spectral.asm.analyzer.value.Value
 import org.spectral.asm.analyzer.value.ValueType
 import org.spectral.asm.core.Method
 import org.spectral.asm.core.code.Instruction
-import org.spectral.asm.core.code.type.IncInstruction
-import org.spectral.asm.core.code.type.IntInstruction
-import org.spectral.asm.core.code.type.LVTInstruction
-import org.spectral.asm.core.code.type.LdcInstruction
+import org.spectral.asm.core.code.type.*
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.math.max
@@ -561,6 +558,42 @@ object MethodAnalyzer {
                 I2B -> currentFrame = doCast(insn.opcode, stack, Byte::class)
                 I2C -> currentFrame = doCast(insn.opcode, stack, Char::class)
                 I2S -> currentFrame = doCast(insn.opcode, stack, Short::class)
+                IFEQ,
+                IFNE,
+                IFLT,
+                IFGE,
+                IFGT,
+                IFLE,
+                IFNULL,
+                IFNONNULL -> {
+                    val cast = insn as JumpInstruction
+                    val target = stack.pop().value!!
+                    successors.add(cast.label)
+                    successors.add(insn.next!!)
+                    currentFrame = JumpFrame(insn.opcode, listOf(target), cast.label, insn.next!!)
+                }
+                IF_ICMPEQ,
+                IF_ICMPNE,
+                IF_ICMPLT,
+                IF_ICMPGT,
+                IF_ICMPGE,
+                IF_ICMPLE,
+                IF_ACMPNE,
+                IF_ACMPEQ -> {
+                    val cast = insn as JumpInstruction
+                    val target1 = stack.pop().value!!
+                    val target2 = stack.pop().value!!
+                    successors.add(cast.label)
+                    successors.add(insn.next!!)
+                    currentFrame = JumpFrame(insn.opcode, listOf(target1, target2), cast.label, insn.next!!)
+                }
+                GOTO -> {
+                    val cast = insn as JumpInstruction
+                    successors.add(cast.label)
+                    currentFrame = JumpFrame(insn.opcode, emptyList(), cast.label)
+                }
+                JSR -> throw UnsupportedOperationException("JSR opcode not supported in JVM 8+")
+                RET -> throw UnsupportedOperationException("RET opcode not supported in JVM 8+")
             }
 
             /*
@@ -648,7 +681,7 @@ object MethodAnalyzer {
                 /*
                  * Continue to the next instruction
                  */
-                insn = insn.next ?: return
+                insn = insn.next ?: throw RuntimeException("Execution fall off.")
             }
         }
     }
