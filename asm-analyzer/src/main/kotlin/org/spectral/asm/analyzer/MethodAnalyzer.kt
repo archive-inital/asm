@@ -608,7 +608,18 @@ object MethodAnalyzer {
                     successors.addAll(cast.labels)
                     successors.add(cast.default!!)
                 }
-
+                IRETURN,
+                LRETURN,
+                FRETURN,
+                DRETURN,
+                ARETURN -> {
+                    currentFrame = ReturnFrame(insn.opcode, stack.pop().value!!)
+                    complete = true
+                }
+                RETURN -> {
+                    currentFrame = ReturnFrame(insn.opcode, null)
+                    complete = true
+                }
 
                 ATHROW -> {
                     val throwable = stack.pop().value!!
