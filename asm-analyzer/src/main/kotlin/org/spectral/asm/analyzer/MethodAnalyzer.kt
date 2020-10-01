@@ -18,8 +18,10 @@
 
 package org.spectral.asm.analyzer
 
+import com.google.common.primitives.Primitives
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Opcodes.*
+import org.objectweb.asm.Type
 import org.spectral.asm.analyzer.frame.ArgumentFrame
 import org.spectral.asm.analyzer.frame.Frame
 import org.spectral.asm.analyzer.frame.LdcFrame
@@ -28,6 +30,8 @@ import org.spectral.asm.analyzer.value.Value
 import org.spectral.asm.analyzer.value.ValueType
 import org.spectral.asm.core.Method
 import org.spectral.asm.core.code.Instruction
+import org.spectral.asm.core.code.type.IntInstruction
+import org.spectral.asm.core.code.type.LdcInstruction
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.math.max
@@ -231,6 +235,36 @@ object MethodAnalyzer {
                 FCONST_2 -> {
                     currentFrame = LdcFrame(insn.opcode, insn.opcode - 11)
                     stack.push(StackContext(Float::class, currentFrame))
+                }
+                DCONST_0,
+                DCONST_1 -> {
+                    currentFrame = LdcFrame(insn.opcode, insn.opcode - 14)
+                    stack.pushWide(StackContext(Double::class, currentFrame))
+                }
+                BIPUSH -> {
+                    val cast = insn as IntInstruction
+                    currentFrame = LdcFrame(insn.opcode, cast.operand.toByte())
+                    stack.push(StackContext(Byte::class, currentFrame))
+                }
+                SIPUSH -> {
+                    val cast = insn as IntInstruction
+                    currentFrame = LdcFrame(insn.opcode, cast.operand.toShort())
+                    stack.push(StackContext(Short::class, currentFrame))
+                }
+                LDC -> {
+                    val cast = insn as LdcInstruction
+                    currentFrame = LdcFrame(insn.opcode, cast.cst)
+                    var unwrapped = Primitives.unwrap(cast.cst::class.java).kotlin
+                    if(unwrapped == cast.cst::class) {
+                        if(cast.cst is Type) {
+                            unwrapped = Class::class
+                        } else {
+                            unwrapped = cast.cst::class
+                        }
+                        stack.push(StackContext(Any::class, currentFrame, Type.getType(unwrapped.java).internalName))
+                    } else {
+                        stack.push(StackContext(unwrapped, currentFrame))
+                    }
                 }
             }
 
