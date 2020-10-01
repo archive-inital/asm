@@ -22,6 +22,7 @@ import org.objectweb.asm.MethodVisitor
 import org.spectral.asm.core.Method
 import org.spectral.asm.core.code.type.*
 import org.spectral.asm.core.reference.ClassRef
+import org.spectral.asm.core.reference.MethodRef
 import java.util.*
 import org.objectweb.asm.Label as AsmLabel
 
@@ -166,6 +167,10 @@ class Code(val method: Method) {
 
     internal fun visitMultiANewArrayInsn(desc: String, dims: Int) {
         this.instructions.add(MultiNewArrayInstruction(desc, dims))
+    }
+
+    internal fun visitMethodInsn(opcode: Int, owner: String, name: String, desc: String, toInterface: Boolean) {
+        this.instructions.add(InvokeMethodInstruction(opcode, MethodRef(ClassRef(owner), name, desc), toInterface))
     }
 
     internal fun visitMaxs(maxStack: Int, maxLocals: Int) {

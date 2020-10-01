@@ -125,6 +125,7 @@ class Method(val owner: Class) : MethodVisitor(ASM9) {
     override fun visitTableSwitchInsn(min: Int, max: Int, default: AsmLabel?, vararg labels: AsmLabel) = code.visitTableSwitchInsn(min, max, default, labels.toList().toTypedArray())
     override fun visitLookupSwitchInsn(dflt: AsmLabel?, keys: IntArray, labels: Array<AsmLabel>) = code.visitLookupSwitchInsn(dflt, keys, labels)
     override fun visitMultiANewArrayInsn(descriptor: String, numDimensions: Int) = code.visitMultiANewArrayInsn(descriptor, numDimensions)
+    override fun visitMethodInsn(opcode: Int, owner: String, name: String, descriptor: String, isInterface: Boolean) = code.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
     override fun visitMaxs(maxStack: Int, maxLocals: Int) = code.visitMaxs(maxStack, maxLocals)
 
     override fun visitEnd() {
