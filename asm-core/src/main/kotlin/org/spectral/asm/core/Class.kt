@@ -99,7 +99,31 @@ class Class : ClassVisitor(ASM9) {
          */
         this.parent.ref?.children?.add(this)
         this.interfaces.mapNotNull { it.ref }.forEach { it.implementers.add(this) }
+
+        /*
+         * Init methods and fields.
+         */
+        this.methods.forEach { it.init() }
+        this.fields.forEach { it.init() }
     }
+
+    /**
+     * Gets a method contained within this class with a matching [name] and [desc].
+     *
+     * @param name String
+     * @param desc String
+     * @return Method?
+     */
+    fun findMethod(name: String, desc: String): Method? = this.methods.firstOrNull { it.name == name && it.desc == desc }
+
+    /**
+     * Finds a field contained within this class with a matching [name] and [desc].
+     *
+     * @param name String
+     * @param desc String
+     * @return Field?
+     */
+    fun findField(name: String, desc: String): Field? = this.fields.firstOrNull { it.name == name && it.desc == desc }
 
     /*
      * VISITOR METHODS

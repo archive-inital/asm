@@ -20,6 +20,7 @@ package org.spectral.asm.core
 
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes.ASM9
+import org.objectweb.asm.Type
 import java.lang.reflect.Modifier
 
 /**
@@ -43,7 +44,17 @@ class Method(val owner: Class) : MethodVisitor(ASM9) {
     /**
      * The descriptor of the method
      */
-    lateinit var desc: String
+    val desc: String get() = Type.getMethodDescriptor(this.returnType, *this.argumentTypes.toTypedArray())
+
+    /**
+     * A list of argument ASM [Type]s.
+     */
+    val argumentTypes = mutableListOf<Type>()
+
+    /**
+     * The return ASM [Type] of this method.
+     */
+    lateinit var returnType: Type
 
     /**
      * Creates a new method with initialized visitor values.
@@ -57,7 +68,11 @@ class Method(val owner: Class) : MethodVisitor(ASM9) {
     constructor(owner: Class, access: Int, name: String, desc: String) : this(owner) {
         this.access = access
         this.name = name
-        this.desc = desc
+
+        val type = Type.getMethodType(desc)
+
+        this.argumentTypes.addAll(type.argumentTypes)
+        this.returnType = type.returnType
     }
 
     /**

@@ -20,6 +20,7 @@ package org.spectral.asm.core
 
 import org.objectweb.asm.FieldVisitor
 import org.objectweb.asm.Opcodes.ASM9
+import org.objectweb.asm.Type
 import java.lang.reflect.Modifier
 
 /**
@@ -41,9 +42,14 @@ class Field(val owner: Class) : FieldVisitor(ASM9) {
     lateinit var name: String
 
     /**
+     * The ASM [Type] of this field.
+     */
+    lateinit var type: Type
+
+    /**
      * The descriptor of the field.
      */
-    lateinit var desc: String
+    val desc: String get() = type.descriptor
 
     /**
      * The initialized value of the field.
@@ -69,7 +75,7 @@ class Field(val owner: Class) : FieldVisitor(ASM9) {
     ) : this(owner) {
         this.access = access
         this.name = name
-        this.desc = desc
+        this.type = Type.getType(desc)
         this.value = value
     }
 
