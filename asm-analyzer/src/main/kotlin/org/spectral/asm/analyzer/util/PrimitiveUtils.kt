@@ -60,8 +60,8 @@ object PrimitiveUtils {
         nameToPrimitive["void"] = Void::class
     }
 
-    fun forName(name: String): KClass<*> {
-        return nameToPrimitive[name] ?: throw NoSuchElementException("No primitive type with name '$name' found.")
+    fun forName(name: String): KClass<*>? {
+        return nameToPrimitive[name]
     }
 
     fun defaultValueFor(type: KClass<*>): Any? {

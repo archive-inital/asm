@@ -35,6 +35,10 @@ open class Instruction(val opcode: Int) {
      */
     val insnIndex: Int get() = code.instructions.indexOf(this)
 
+    val prev: Instruction? get() = code.instructions.getOrNull(insnIndex - 1)
+
+    val next: Instruction? get() = code.instructions.getOrNull(insnIndex + 1)
+
     /**
      * The [Code] object this instruction belongs in.
      */

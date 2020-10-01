@@ -19,8 +19,15 @@
 package org.spectral.asm.analyzer
 
 import org.objectweb.asm.Opcodes
+import org.objectweb.asm.tree.AbstractInsnNode
+import org.objectweb.asm.tree.TryCatchBlockNode
 import org.spectral.asm.analyzer.frame.ArgumentFrame
+import org.spectral.asm.analyzer.util.PrimitiveUtils
 import org.spectral.asm.core.Method
+import org.spectral.asm.core.code.Instruction
+import java.util.*
+import java.util.function.Function
+import org.spectral.asm.core.code.Exception as ExceptionBlock
 
 /**
  * Analyzes a Java method and outputs a [Frame] type for each instruction and what value type
@@ -62,7 +69,9 @@ object MethodAnalyzer {
         /**
          * The instruction index we are currently at.
          */
-        var currentIndex = 0
+        var insnIndex = 0
+
+        var lvtIndex = 0
 
         /*
          * If the method is NOT static, we need to add the 'this' local variable as an ASTORE instruction to store
@@ -70,16 +79,63 @@ object MethodAnalyzer {
          */
         if(!method.isStatic) {
             locals.add(StackContext(ArgumentFrame(Opcodes.ASTORE, 0), method.owner.name))
-            currentIndex++
+            lvtIndex++
         }
 
         /*
          * Load all the argument types from the method onto the LVT.
          */
         method.argumentTypes.forEach { type ->
+            val klass = PrimitiveUtils.forName(type.className)
+
+            val opcode = when(klass) {
+                Int::class -> Opcodes.ISTORE
+                Long::class -> Opcodes.LSTORE
+                Double::class -> Opcodes.DSTORE
+                Float::class -> Opcodes.FSTORE
+                else -> Opcodes.ASTORE
+            }
+
+            val frame = ArgumentFrame(opcode, lvtIndex)
+
+            if(klass == null) {
+                locals.add(StackContext(Any::class, frame, type.internalName))
+            } else {
+                locals.add(StackContext(klass, frame))
+            }
+
+            /*
+             * Account for 64bit wide stack values. (Doubles and longs)
+             */
+            if(klass == Double::class || klass == Long::class) {
+                locals.add(StackContext(klass, frame))
+            }
         }
 
-        throw Exception()
+        /*
+         * Deal with how exception handling is done per Oracle JVM specifications.
+         * This is how Java 8+ handles exceptions.
+         */
 
+        /**
+         * A map of instruction -> exception objects.
+         * Contains a list of instruction and what exception blocks they are apart of.
+         */
+        val handlers = hashMapOf<Instruction, MutableList<ExceptionBlock>>()
+
+        /*
+         * If the method has exception try-catch blocks.
+         */
+        if(method.code.exceptions.isNotEmpty()) {
+            method.code.exceptions.forEach { exceptionBlock ->
+                var insn: Instruction? = exceptionBlock.start
+                while(insn != exceptionBlock.end) {
+                    handlers.computeIfAbsent(insn!!) { mutableListOf() }.add(exceptionBlock)
+                    insn = insn.next
+                }
+            }
+        }
+
+        return result
     }
 }
