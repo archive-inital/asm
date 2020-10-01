@@ -36,6 +36,16 @@ open class Instruction(val opcode: Int) {
     val insnIndex: Int get() = code.instructions.indexOf(this)
 
     /**
+     * The previous instruction in the associated [code] instruction list.
+     */
+    val prev: Instruction? get() = code.instructions.getOrNull(insnIndex - 1)
+
+    /**
+     * The next instruction in the associated [code] instruction list.
+     */
+    val next: Instruction? get() = code.instructions.getOrNull(insnIndex + 1)
+
+    /**
      * The [Code] object this instruction belongs in.
      */
     lateinit var code: Code internal set

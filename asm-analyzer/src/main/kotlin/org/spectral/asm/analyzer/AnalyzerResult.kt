@@ -16,33 +16,37 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.spectral.asm.core
+package org.spectral.asm.analyzer
 
-import org.spectral.asm.core.util.JarUtil
-import java.io.File
+import org.spectral.asm.analyzer.frame.Frame
+import org.spectral.asm.core.code.Instruction
 
-object Test {
+/**
+ * Represents the returned results of a analysis of some type.
+ */
+class AnalyzerResult {
 
-    @JvmStatic
-    fun main(args: Array<String>) {
-        val input = File("Z:\\Data\\Libraries\\Projects\\Runescape\\Spectral\\asm\\asm-core\\gamepack.jar")
+    /**
+     * The max number of entries on the JVM stack.
+     */
+    var maxStack: Int = 0
+        internal set
 
-        val output = File("Z:\\Data\\Libraries\\Projects\\Runescape\\Spectral\\asm\\asm-core\\gamepack-out.jar")
+    /**
+     * The max number of entries in the LVT.
+     */
+    var maxLocals: Int = 0
+        internal set
 
-        val pool = ClassPool()
+    /**
+     * The instruction frames in this analysis mapped to the instruction that was executed.
+     */
+    val frames = hashMapOf<Instruction, MutableList<Frame>>()
 
-        /*
-         * Read the jar.
+    companion object {
+        /**
+         * An empty analysis result object.
          */
-        JarUtil.readJar(input).forEach { pool.addClass(it) }
-
-        pool.init()
-
-        /*
-         * Write the jar.
-         */
-        JarUtil.writeJar(output, pool)
-
-        println()
+        val EMPTY_RESULT = AnalyzerResult()
     }
 }
