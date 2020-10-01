@@ -179,7 +179,22 @@ class Class : ClassVisitor(ASM9) {
     }
 
     fun accept(visitor: ClassVisitor) {
+        val interfacesArray = this.interfaces.map { it.name }.toTypedArray()
 
+        visitor.visit(this.version, this.access, this.name, null, this.parent.name, interfacesArray)
+        visitor.visitSource(this.source, null)
+
+        this.methods.forEach { method ->
+            val methodVisitor = visitor.visitMethod(method.access, method.name, method.desc, null, arrayOf())
+            method.accept(methodVisitor)
+        }
+
+        this.fields.forEach { field ->
+            val fieldVisitor = visitor.visitField(field.access, field.name, field.desc, null, field.value)
+            field.accept(fieldVisitor)
+        }
+
+        visitor.visitEnd()
     }
 
     override fun toString(): String {

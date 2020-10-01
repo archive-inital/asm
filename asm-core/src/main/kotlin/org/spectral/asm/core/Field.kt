@@ -96,6 +96,10 @@ class Field(val owner: Class) : FieldVisitor(ASM9) {
 
     }
 
+    fun accept(visitor: FieldVisitor) {
+        visitor.visitEnd()
+    }
+
     override fun toString(): String {
         return "$owner.$name"
     }

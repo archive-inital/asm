@@ -126,6 +126,11 @@ class Method(val owner: Class) : MethodVisitor(ASM9) {
          */
     }
 
+    fun accept(visitor: MethodVisitor) {
+        code.accept(visitor)
+        visitor.visitEnd()
+    }
+
     override fun toString(): String {
         return "$owner.$name$desc"
     }

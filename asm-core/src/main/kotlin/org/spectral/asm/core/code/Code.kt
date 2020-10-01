@@ -65,7 +65,17 @@ class Code(val method: Method) {
      * @param visitor MethodVisitor
      */
     fun accept(visitor: MethodVisitor) {
+        visitor.visitCode()
 
+        exceptions.forEach { exception ->
+            visitor.visitTryCatchBlock(exception.start.label, exception.end.label, exception.handler?.label, exception.catchType?.name)
+        }
+
+        instructions.forEach { insn ->
+            insn.accept(visitor)
+        }
+
+        visitor.visitMaxs(maxStack, maxLocals)
     }
 
     /**
