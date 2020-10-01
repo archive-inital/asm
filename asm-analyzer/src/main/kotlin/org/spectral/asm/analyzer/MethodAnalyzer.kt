@@ -195,6 +195,52 @@ object MethodAnalyzer {
     }
 
     /**
+     * Executes a stack cast instruction on the given stack and return a casted [Frame].
+     *
+     * @param opcode Int
+     * @param stack MutableList<StackContext>
+     * @param primitive KClass<*>
+     * @return Frame
+     */
+    private fun doCast(opcode: Int, stack: MutableList<StackContext>, primitive: KClass<*>): Frame {
+        val value = stack.pop().value!!
+        val currentFrame = MathFrame(opcode, value)
+        stack.push(StackContext(primitive, currentFrame))
+        return currentFrame
+    }
+
+    /**
+     * Executes unary stack math operation on the provided [stack].
+     *
+     * @param opcode Int
+     * @param stack MutableList<StackContext>
+     * @param primitive KClass<P>
+     * @return Frame
+     */
+    private fun <P : Any> doUnaryMath(opcode: Int, stack: MutableList<StackContext>, primitive: KClass<P>): Frame {
+        val target = stack.pop().value!!
+        val currentFrame = MathFrame(opcode, target)
+        stack.push(StackContext(primitive, currentFrame))
+        return currentFrame
+    }
+
+    /**
+     * Executes binary stack math operation on the provided stack and returns the resulting math frame.
+     *
+     * @param opcode Int
+     * @param stack MutableList<StackContext>
+     * @param primitive KClass<P>
+     * @return Frame
+     */
+    private fun <P : Any> doBinaryMath(opcode: Int, stack: MutableList<StackContext>, primitive: KClass<P>): Frame {
+        val target1 = stack.pop().value!!
+        val target2 = stack.pop().value!!
+        val currentFrame = MathFrame(opcode, target1, target2)
+        stack.push(StackContext(primitive, currentFrame))
+        return currentFrame
+    }
+
+    /**
      * Executes a instruction from a method and updates the provided data maps and analysis result values.
      *
      * @param method Method
