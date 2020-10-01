@@ -22,19 +22,19 @@ import com.google.common.primitives.Primitives
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
-import org.spectral.asm.analyzer.frame.ArgumentFrame
-import org.spectral.asm.analyzer.frame.Frame
-import org.spectral.asm.analyzer.frame.LdcFrame
+import org.spectral.asm.analyzer.frame.*
 import org.spectral.asm.analyzer.util.PrimitiveUtils
 import org.spectral.asm.analyzer.value.Value
 import org.spectral.asm.analyzer.value.ValueType
 import org.spectral.asm.core.Method
 import org.spectral.asm.core.code.Instruction
 import org.spectral.asm.core.code.type.IntInstruction
+import org.spectral.asm.core.code.type.LVTInstruction
 import org.spectral.asm.core.code.type.LdcInstruction
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.math.max
+import kotlin.reflect.KClass
 import org.spectral.asm.core.code.Exception as ExceptionBlock
 
 /**
@@ -158,6 +158,29 @@ object MethodAnalyzer {
     }
 
     /**
+     * Executes an array load of a given type on the provided stack.
+     *
+     * @param opcode Int
+     * @param stack MutableList<StackContext>
+     * @param type KClass<*>
+     * @return Frame
+     */
+    private fun executeArrayLoad(opcode: Int, stack: MutableList<StackContext>, type: KClass<*>): Frame {
+        val index = stack.pop().value
+        val array = stack.pop().value
+
+        val currentFrame = ArrayLoadFrame(opcode, index!!, array!!)
+
+        if(type == Any::class) {
+            stack.push(StackContext(type, currentFrame, "java/lang/Object")) // Fuck this. We really should unwrap all types.
+        } else {
+            stack.push(StackContext(type, currentFrame))
+        }
+
+        return currentFrame
+    }
+
+    /**
      * Executes a instruction from a method and updates the provided data maps and analysis result values.
      *
      * @param method Method
@@ -228,7 +251,7 @@ object MethodAnalyzer {
                 LCONST_0,
                 LCONST_1 -> {
                     currentFrame = LdcFrame(insn.opcode, insn.opcode - 9)
-                    stack.pushWide(StackContext(Long::class, currentFrame))
+                    stack.push(StackContext(Long::class, currentFrame))
                 }
                 FCONST_0,
                 FCONST_1,
@@ -239,7 +262,7 @@ object MethodAnalyzer {
                 DCONST_0,
                 DCONST_1 -> {
                     currentFrame = LdcFrame(insn.opcode, insn.opcode - 14)
-                    stack.pushWide(StackContext(Double::class, currentFrame))
+                    stack.push(StackContext(Double::class, currentFrame))
                 }
                 BIPUSH -> {
                     val cast = insn as IntInstruction
@@ -266,6 +289,24 @@ object MethodAnalyzer {
                         stack.push(StackContext(unwrapped, currentFrame))
                     }
                 }
+                ILOAD,
+                LLOAD,
+                FLOAD,
+                DLOAD,
+                ALOAD -> {
+                    val cast = insn as LVTInstruction
+                    val ctx = locals[cast.index]
+                    currentFrame = LocalFrame(insn.opcode, cast.index, ctx.value)
+                    stack.push(ctx)
+                }
+                IALOAD -> currentFrame = executeArrayLoad(insn.opcode, stack, Int::class)
+                LALOAD -> currentFrame = executeArrayLoad(insn.opcode, stack, Long::class)
+                FALOAD -> currentFrame = executeArrayLoad(insn.opcode, stack, Float::class)
+                DALOAD -> currentFrame = executeArrayLoad(insn.opcode, stack, Double::class)
+                AALOAD -> currentFrame = executeArrayLoad(insn.opcode, stack, Any::class)
+                BALOAD -> currentFrame = executeArrayLoad(insn.opcode, stack, Byte::class)
+                CALOAD -> currentFrame = executeArrayLoad(insn.opcode, stack, Char::class)
+                SALOAD -> currentFrame = executeArrayLoad(insn.opcode, stack, Short::class)
             }
 
             /*

@@ -30,7 +30,7 @@ import kotlin.reflect.KClass
  *
  * @constructor
  */
-class StackContext {
+open class StackContext {
 
     val type: KClass<*>
 
