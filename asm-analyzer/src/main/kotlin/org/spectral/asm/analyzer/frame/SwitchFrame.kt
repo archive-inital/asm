@@ -23,7 +23,7 @@ import org.spectral.asm.core.code.Label
 class SwitchFrame(opcode: Int, val switchTarget: Frame, val nodes: List<Label>, val default: Label) : Frame(opcode) {
 
     init {
-        this.switchTarget.children.add(this)
+        this.switchTarget.reads.add(this)
     }
 
 }

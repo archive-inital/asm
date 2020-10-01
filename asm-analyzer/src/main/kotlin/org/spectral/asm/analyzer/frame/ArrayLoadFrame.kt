@@ -32,10 +32,10 @@ class ArrayLoadFrame(opcode: Int, val index: Frame, val array: Frame) : Frame(op
      * frames this frame accessed from the stack
      */
     init {
-        this.index.children.add(this)
-        this.array.children.add(this)
-        this.parents.add(this.index)
-        this.parents.add(this.array)
+        this.index.reads.add(this)
+        this.array.reads.add(this)
+        this.writes.add(this.index)
+        this.writes.add(this.array)
     }
 
 }

@@ -33,7 +33,7 @@ class LocalFrame(opcode: Int, val local: Int, val value: Frame?) : Frame(opcode)
          * provided frame value is not null.
          */
         if(this.value != null) {
-            this.value.children.add(this)
+            this.value.reads.add(this)
         }
     }
 

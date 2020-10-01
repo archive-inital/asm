@@ -652,6 +652,76 @@ object MethodAnalyzer {
                     val instance = stack.pop().value
                     currentFrame = FieldFrame(insn.opcode, cast.field.owner.name, cast.field.name, cast.field.desc, instance, obj)
                 }
+                INVOKEVIRTUAL -> {
+                    val cast = insn as MethodInstruction
+                    val type = Type.getReturnType(cast.method.desc)
+                    val klass = PrimitiveUtils.forName(type.className)
+                    val args = mutableListOf<Frame?>()
+                    Type.getArgumentTypes(cast.method.desc).forEach { _ ->
+                        args.add(0, stack.pop().value)
+                    }
+                    currentFrame = MethodFrame(insn.opcode, cast.method.owner.name, cast.method.name, cast.method.desc, stack.pop().value, args)
+                    if(type.sort != Type.VOID) {
+                        if(klass == null) {
+                            stack.push(StackContext(Any::class, currentFrame, type.internalName))
+                        } else {
+                            stack.push(StackContext(klass, currentFrame))
+                        }
+                    }
+                }
+                INVOKESPECIAL -> {
+                    val cast = insn as MethodInstruction
+                    val type = Type.getReturnType(cast.method.desc)
+                    val klass = PrimitiveUtils.forName(type.className)
+                    val args = mutableListOf<Frame?>()
+                    Type.getArgumentTypes(cast.method.desc).forEach { _ ->
+                        args.add(0, stack.pop().value!!)
+                    }
+                    val instance = stack.pop()
+                    instance.initialize()
+                    currentFrame = MethodFrame(insn.opcode, cast.method.owner.name, cast.method.name, cast.method.desc, instance.value, args)
+                    if(type.sort != Type.VOID) {
+                        if(klass == null) {
+                            stack.push(StackContext(Any::class, currentFrame, type.internalName))
+                        } else {
+                            stack.push(StackContext(klass, currentFrame))
+                        }
+                    }
+                }
+                INVOKESTATIC -> {
+                    val cast = insn as MethodInstruction
+                    val type = Type.getReturnType(cast.method.desc)
+                    val klass = PrimitiveUtils.forName(type.className)
+                    val args = mutableListOf<Frame?>()
+                    Type.getArgumentTypes(cast.method.desc).forEach {
+                        args.add(0, stack.pop().value)
+                    }
+                    currentFrame = MethodFrame(insn.opcode, cast.method.owner.name, cast.method.name, cast.method.desc, null, args)
+                    if(type.sort != Type.VOID) {
+                        if(klass == null) {
+                            stack.push(StackContext(Any::class, currentFrame, type.internalName))
+                        } else {
+                            stack.push(StackContext(klass, currentFrame))
+                        }
+                    }
+                }
+                INVOKEINTERFACE -> {
+                    val cast = insn as MethodInstruction
+                    val type = Type.getReturnType(cast.method.desc)
+                    val klass = PrimitiveUtils.forName(type.className)
+                    val args = mutableListOf<Frame?>()
+                    Type.getArgumentTypes(cast.method.desc).forEach {
+                        args.add(0, stack.pop().value)
+                    }
+                    currentFrame = MethodFrame(insn.opcode, cast.method.owner.name, cast.method.name, cast.method.desc, stack.pop().value, args)
+                    if(type.sort != Type.VOID) {
+                        if(klass == null) {
+                            stack.push(StackContext(Any::class, currentFrame, type.internalName))
+                        } else {
+                            stack.push(StackContext(klass, currentFrame))
+                        }
+                    }
+                }
                 ATHROW -> {
                     val throwable = stack.pop().value!!
                     currentFrame = ThrowFrame(throwable)

@@ -22,7 +22,7 @@ class ReturnFrame(opcode: Int, val obj: Frame?) : Frame(opcode) {
 
     init {
         if(this.obj != null) {
-            this.obj.children.add(this)
+            this.obj.reads.add(this)
         }
     }
 

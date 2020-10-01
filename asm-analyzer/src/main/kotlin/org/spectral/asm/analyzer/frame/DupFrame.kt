@@ -21,7 +21,7 @@ package org.spectral.asm.analyzer.frame
 class DupFrame(opcode: Int, vararg val targets: Frame?) : Frame(opcode) {
 
     init {
-        this.targets.forEach { it?.children?.add(this) }
-        targets.let { this.parents.addAll(it.filterNotNull()) }
+        this.targets.forEach { it?.reads?.add(this) }
+        targets.let { this.writes.addAll(it.filterNotNull()) }
     }
 }
