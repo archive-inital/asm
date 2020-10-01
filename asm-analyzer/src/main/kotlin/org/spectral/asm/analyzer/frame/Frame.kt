@@ -26,7 +26,7 @@ import org.spectral.asm.analyzer.value.Value
  * @property opcode Int
  * @constructor
  */
-abstract class Frame(val opcode: Int) {
+open class Frame(val opcode: Int) {
 
     /**
      * The parent frames which contributed to this frames value.

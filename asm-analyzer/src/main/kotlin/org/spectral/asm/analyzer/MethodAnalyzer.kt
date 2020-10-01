@@ -19,14 +19,18 @@
 package org.spectral.asm.analyzer
 
 import org.objectweb.asm.Opcodes
+import org.objectweb.asm.Opcodes.ACONST_NULL
+import org.objectweb.asm.Opcodes.NOP
 import org.objectweb.asm.tree.AbstractInsnNode
 import org.objectweb.asm.tree.TryCatchBlockNode
 import org.spectral.asm.analyzer.frame.ArgumentFrame
+import org.spectral.asm.analyzer.frame.Frame
 import org.spectral.asm.analyzer.util.PrimitiveUtils
 import org.spectral.asm.core.Method
 import org.spectral.asm.core.code.Instruction
 import java.util.*
 import java.util.function.Function
+import kotlin.collections.HashMap
 import org.spectral.asm.core.code.Exception as ExceptionBlock
 
 /**
@@ -67,10 +71,8 @@ object MethodAnalyzer {
         val locals = mutableListOf<StackContext>()
 
         /**
-         * The instruction index we are currently at.
+         * The current local variable index. This value should always be '<size of LVT> - 1'.
          */
-        var insnIndex = 0
-
         var lvtIndex = 0
 
         /*
@@ -136,6 +138,69 @@ object MethodAnalyzer {
             }
         }
 
+        /*
+         * Execute the method starting at the method's first instruction.
+         */
+        try {
+            this.execute(method, method.code.instructions.first, stack, locals, handlers, hashSetOf(), result)
+        } catch(e : StackOverflowError) {
+            /*
+             * We do not want to cause any stack overflows.
+             */
+            throw RuntimeException("Stack overflow. Maximum stack size is ${method.code.maxStack}.")
+        }
+
         return result
+    }
+
+    /**
+     * Executes a instruction from a method and updates the provided data maps and analysis result values.
+     *
+     * @param method Method
+     * @param insn Instruction
+     * @param stack MutableList<StackContext>
+     * @param locals MutableList<StackContext>
+     * @param handlers HashMap<Instruction, MutableList<Exception>>
+     * @param jumps MutableSet<Entry<Instruction, Instruction>>
+     * @param result AnalyzerResult
+     */
+    private fun execute(
+            method: Method,
+            insn: Instruction,
+            stack: MutableList<StackContext>,
+            locals: MutableList<StackContext>,
+            handlers: HashMap<Instruction, MutableList<ExceptionBlock>>,
+            jumps: MutableSet<Map.Entry<Instruction, Instruction>>,
+            result: AnalyzerResult
+    ) {
+        /**
+         * Whether the execution is complete.
+         */
+        var complete = false
+
+        /**
+         * The next instructions for execution. We can have multiple in the event of a logical branch
+         * in the code.
+         */
+        val nextInstructions = mutableListOf<Instruction>()
+
+        /**
+         * The current execution frame being executed.
+         */
+        var currentFrame: Frame
+
+        /*
+         * Loop until we break out.
+         */
+        while(true) {
+            /*
+             * Determine the action based on the executing instruction opcode.
+             */
+            when(insn.opcode) {
+                NOP -> {
+                    currentFrame = Frame(NOP)
+                }
+            }
+        }
     }
 }
