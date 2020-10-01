@@ -19,41 +19,13 @@
 package org.spectral.asm.analyzer.frame
 
 /**
- * Represents a instruction frame during a method execution.
+ * An instruction frame which pushes a constant LDC value to the stack.
  *
- * @property opcode Int
+ * @property cst Any?
  * @constructor
  */
-open class Frame(val opcode: Int) {
+class LdcFrame(opcode: Int, val cst: Any?) : Frame(opcode) {
 
-    /**
-     * The parent frames which contributed to this frames value.
-     */
-    val parents = mutableListOf<Frame>()
-
-    /**
-     * The frames this frame contributed values to.
-     */
-    val children = mutableListOf<Frame>()
-
-    /**
-     * Whether the frame is pushing a constant value to the stack.
-     */
-    open val isConstant: Boolean = calculateConstant()
-
-    /**
-     * Calculates whether this frame has a constant pushed value.
-     *
-     * @return Boolean
-     */
-    private fun calculateConstant(): Boolean {
-        var ret = true
-        parents.forEach { parent ->
-            ret = ret and parent.isConstant
-        }
-
-        return ret
-    }
-
+    override val isConstant: Boolean = true
 
 }

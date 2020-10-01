@@ -25,6 +25,7 @@ import org.objectweb.asm.tree.AbstractInsnNode
 import org.objectweb.asm.tree.TryCatchBlockNode
 import org.spectral.asm.analyzer.frame.ArgumentFrame
 import org.spectral.asm.analyzer.frame.Frame
+import org.spectral.asm.analyzer.frame.LdcFrame
 import org.spectral.asm.analyzer.util.PrimitiveUtils
 import org.spectral.asm.core.Method
 import org.spectral.asm.core.code.Instruction
@@ -195,12 +196,76 @@ object MethodAnalyzer {
         while(true) {
             /*
              * Determine the action based on the executing instruction opcode.
+             * Based on the opcode and what it does, we instantiate the [currentFrame] appropriately.
              */
             when(insn.opcode) {
                 NOP -> {
                     currentFrame = Frame(NOP)
                 }
+                ACONST_NULL -> {
+                    currentFrame = LdcFrame(insn.opcode, null)
+                }
             }
         }
+    }
+
+    /*
+     * PRIVATE UTILITY METHODS
+     */
+
+    /**
+     * Creates and pushes a [StackContext] to a list representing the JVM stack or LVT.
+     *
+     * @receiver MutableList<StackContext>
+     * @param ctx StackContext
+     */
+    private fun MutableList<StackContext>.push(ctx: StackContext) {
+        this.add(0, ctx)
+    }
+
+    /**
+     * Creates and pushes a 64bit WIDE [StackContext] to a list representing the JVM stack or LVT.
+     *
+     * @receiver MutableList<StackContext>
+     * @param ctx StackContext
+     */
+    private fun MutableList<StackContext>.pushWide(ctx: StackContext) {
+        this.push(ctx)
+        this.push(ctx)
+    }
+
+    /**
+     * Pops a [StackContext] off of a list represents the JVM stack of LVT.
+     *
+     * @receiver MutableList<StackContext>
+     * @return StackContext
+     */
+    private fun MutableList<StackContext>.pop(): StackContext {
+        if(this.isEmpty()) {
+            throw RuntimeException("Stack underflow. Tried to pop value off of an empty stack.")
+        }
+
+        return this.removeAt(0)
+    }
+
+    /**
+     * Pops a 64bit WIDE [StackContext] off of a list representing the JVM stack or LVT.
+     *
+     * @receiver MutableList<StackContext>
+     * @return StackContext
+     */
+    private fun MutableList<StackContext>.popWide(): StackContext {
+        if(this.isEmpty() || this.size == 1) {
+            throw RuntimeException("Stack underflow. Tried to pop value off of an empty stack.")
+        }
+
+        val top = this.pop()
+        val bottom = this.pop()
+
+        if(top != bottom) {
+            throw RuntimeException("Popped wide values are invalid. Expected '$top' but got '$bottom'.")
+        }
+
+        return top
     }
 }
