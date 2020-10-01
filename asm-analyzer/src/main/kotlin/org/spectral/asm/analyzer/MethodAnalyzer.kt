@@ -72,7 +72,7 @@ object MethodAnalyzer {
         /**
          * A list of execution LVT states or (contexts) at each execution frame (each instruction).
          */
-        val locals = mutableListOf<StackContext>()
+        val locals = mutableListOf<StackContext?>()
 
         /**
          * The current local variable index. This value should always be '<size of LVT> - 1'.
@@ -195,7 +195,7 @@ object MethodAnalyzer {
             method: Method,
             initialInsn: Instruction,
             stack: MutableList<StackContext>,
-            locals: MutableList<StackContext>,
+            locals: MutableList<StackContext?>,
             handlers: HashMap<Instruction, MutableList<ExceptionBlock>>,
             jumps: MutableSet<Map.Entry<Instruction, Instruction>>,
             result: AnalyzerResult
@@ -295,7 +295,8 @@ object MethodAnalyzer {
                 DLOAD,
                 ALOAD -> {
                     val cast = insn as LVTInstruction
-                    val ctx = locals[cast.index]
+                    locals.assureSize(cast.index)
+                    val ctx = locals[cast.index]!!
                     currentFrame = LocalFrame(insn.opcode, cast.index, ctx.value)
                     stack.push(ctx)
                 }
@@ -307,6 +308,17 @@ object MethodAnalyzer {
                 BALOAD -> currentFrame = executeArrayLoad(insn.opcode, stack, Byte::class)
                 CALOAD -> currentFrame = executeArrayLoad(insn.opcode, stack, Char::class)
                 SALOAD -> currentFrame = executeArrayLoad(insn.opcode, stack, Short::class)
+                ISTORE,
+                LSTORE,
+                FSTORE,
+                DSTORE,
+                ASTORE -> {
+                    val cast = insn as LVTInstruction
+                    val ctx = stack.pop()
+                    currentFrame = LocalFrame(insn.opcode, cast.index, ctx.value)
+                    locals.assureSize(cast.index)
+                    locals[cast.index] = StackContext(ctx.type, currentFrame, ctx.initType)
+                }
             }
 
             /*
@@ -352,7 +364,7 @@ object MethodAnalyzer {
                 if(jumps.add(AbstractMap.SimpleEntry(insn, block.handler!!))) {
                     val newStack = mutableListOf<StackContext>()
                     newStack.push(StackContext(ArgumentFrame(-1, -1), block.catchType?.name ?: "java/lang/Throwable"))
-                    val newLocals = mutableListOf<StackContext>()
+                    val newLocals = mutableListOf<StackContext?>()
                     newLocals.addAll(locals)
                     /*
                      * Jump and execute the jumped instruction.
@@ -376,7 +388,7 @@ object MethodAnalyzer {
                     if(jumps.add(AbstractMap.SimpleEntry(insn, successor))) {
                         val newStack = mutableListOf<StackContext>()
                         newStack.addAll(stack)
-                        val newLocals = mutableListOf<StackContext>()
+                        val newLocals = mutableListOf<StackContext?>()
                         newLocals.addAll(locals)
 
                         /*
@@ -402,6 +414,12 @@ object MethodAnalyzer {
     /*
      * PRIVATE UTILITY METHODS
      */
+
+    private fun MutableList<StackContext?>.assureSize(size: Int) {
+        while(this.size <= size) {
+            this.add(null)
+        }
+    }
 
     /**
      * Creates and pushes a [StackContext] to a list representing the JVM stack or LVT.
