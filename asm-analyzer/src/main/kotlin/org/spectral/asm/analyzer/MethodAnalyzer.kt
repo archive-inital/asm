@@ -722,6 +722,12 @@ object MethodAnalyzer {
                         }
                     }
                 }
+                NEW -> {
+                    val cast = insn as TypeInstruction
+                    currentFrame = NewFrame(cast.type.name)
+                    stack.push(StackContext(currentFrame))
+                }
+
                 ATHROW -> {
                     val throwable = stack.pop().value!!
                     currentFrame = ThrowFrame(throwable)

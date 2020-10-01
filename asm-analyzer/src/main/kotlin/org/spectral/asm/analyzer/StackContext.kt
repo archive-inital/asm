@@ -21,6 +21,7 @@ package org.spectral.asm.analyzer
 import com.google.common.primitives.Primitives
 import org.spectral.asm.analyzer.frame.ArgumentFrame
 import org.spectral.asm.analyzer.frame.Frame
+import org.spectral.asm.analyzer.frame.NewFrame
 import org.spectral.asm.analyzer.value.ValueType
 import kotlin.reflect.KClass
 
@@ -83,6 +84,20 @@ open class StackContext {
         this.type = Any::class
         this.value = frame
         this.initType = type
+    }
+
+    /**
+     * Creates a stack context from a [NewFrame] type.
+     *
+     * @param frame NewFrame
+     * @constructor
+     */
+    constructor(frame: NewFrame) {
+        this.isInitialized = false
+        this.type = Any::class
+        this.initType = frame.type
+        this.value = frame
+        this.isThis = false
     }
 
     /**
