@@ -29,11 +29,6 @@ import org.spectral.asm.analyzer.value.Value
 abstract class Frame(val opcode: Int) {
 
     /**
-     * Whether the frame is pushing a constant value to the stack.
-     */
-    open val isConstant: Boolean = calculateConstant()
-
-    /**
      * The parent frames which contributed to this frames value.
      */
     val parents = mutableListOf<Frame>()
@@ -42,6 +37,11 @@ abstract class Frame(val opcode: Int) {
      * The frames this frame contributed values to.
      */
     val children = mutableListOf<Frame>()
+
+    /**
+     * Whether the frame is pushing a constant value to the stack.
+     */
+    open val isConstant: Boolean = calculateConstant()
 
     /**
      * The stack of values at this instruction frame.
@@ -59,7 +59,7 @@ abstract class Frame(val opcode: Int) {
      * @return Boolean
      */
     private fun calculateConstant(): Boolean {
-        var ret = isConstant
+        var ret = true
         parents.forEach { parent ->
             ret = ret and parent.isConstant
         }
