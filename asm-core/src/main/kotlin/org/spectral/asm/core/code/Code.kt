@@ -160,6 +160,10 @@ class Code(val method: Method) {
         this.instructions.add(TableSwitchInstruction(min, max, default?.let { getOrCreateLabel(it) }, labels.map { getOrCreateLabel(it) }.toList()))
     }
 
+    internal fun visitLookupSwitchInsn(default: AsmLabel?, keys: IntArray, labels: Array<AsmLabel>) {
+        this.instructions.add(LookupSwitchInstruction(default?.let { getOrCreateLabel(it) }, keys.toList(), labels.map { getOrCreateLabel(it) }.toList()))
+    }
+
     internal fun visitMaxs(maxStack: Int, maxLocals: Int) {
         this.maxStack = maxStack
         this.maxLocals = maxLocals
