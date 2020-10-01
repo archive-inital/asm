@@ -482,6 +482,55 @@ object MethodAnalyzer {
                     stack.push(top)
                     stack.push(bottom)
                 }
+                IADD,
+                ISUB,
+                IMUL,
+                IDIV,
+                IREM,
+                ISHL,
+                ISHR,
+                IUSHR,
+                IAND,
+                IOR,
+                IXOR,
+                LCMP,
+                FCMPL,
+                FCMPG,
+                DCMPL,
+                DCMPG -> {
+                    currentFrame = doBinaryMath(insn.opcode, stack, Int::class)
+                }
+                LADD,
+                LSUB,
+                LMUL,
+                LDIV,
+                LREM,
+                LSHL,
+                LSHR,
+                LUSHR,
+                LAND,
+                LOR,
+                LXOR -> {
+                    currentFrame = doBinaryMath(insn.opcode, stack, Long::class)
+                }
+                FADD,
+                FSUB,
+                FMUL,
+                FDIV,
+                FREM -> {
+                    currentFrame = doBinaryMath(insn.opcode, stack, Float::class)
+                }
+                DADD,
+                DSUB,
+                DMUL,
+                DDIV,
+                DREM -> {
+                    currentFrame = doBinaryMath(insn.opcode, stack, Double::class)
+                }
+                INEG -> currentFrame = doUnaryMath(insn.opcode, stack, Int::class)
+                LNEG -> currentFrame = doUnaryMath(insn.opcode, stack, Long::class)
+                FNEG -> currentFrame = doUnaryMath(insn.opcode, stack, Float::class)
+                DNEG -> currentFrame = doUnaryMath(insn.opcode, stack, Double::class)
             }
 
             /*
