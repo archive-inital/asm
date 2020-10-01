@@ -119,6 +119,7 @@ class Method(val owner: Class) : MethodVisitor(ASM9) {
     override fun visitLdcInsn(value: Any) = code.visitLdcInsn(value)
     override fun visitIincInsn(index: Int, increment: Int) = code.visitIincInsn(index, increment)
     override fun visitIntInsn(opcode: Int, operand: Int) = code.visitIntInsn(opcode, operand)
+    override fun visitVarInsn(opcode: Int, index: Int) = code.visitVarInsn(opcode, index)
     override fun visitMaxs(maxStack: Int, maxLocals: Int) = code.visitMaxs(maxStack, maxLocals)
 
     override fun visitEnd() {
