@@ -18,6 +18,9 @@
 
 package org.spectral.asm.analyzer
 
+import org.spectral.asm.analyzer.frame.Frame
+import org.spectral.asm.core.code.Instruction
+
 /**
  * Represents the returned results of a analysis of some type.
  */
@@ -34,6 +37,11 @@ class AnalyzerResult {
      */
     var maxLocals: Int = 0
         internal set
+
+    /**
+     * The instruction frames in this analysis mapped to the instruction that was executed.
+     */
+    val frames = hashMapOf<Instruction, MutableList<Frame>>()
 
     companion object {
         /**

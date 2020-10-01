@@ -19,19 +19,18 @@
 package org.spectral.asm.analyzer
 
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Opcodes.ACONST_NULL
-import org.objectweb.asm.Opcodes.NOP
-import org.objectweb.asm.tree.AbstractInsnNode
-import org.objectweb.asm.tree.TryCatchBlockNode
+import org.objectweb.asm.Opcodes.*
 import org.spectral.asm.analyzer.frame.ArgumentFrame
 import org.spectral.asm.analyzer.frame.Frame
 import org.spectral.asm.analyzer.frame.LdcFrame
 import org.spectral.asm.analyzer.util.PrimitiveUtils
+import org.spectral.asm.analyzer.value.Value
+import org.spectral.asm.analyzer.value.ValueType
 import org.spectral.asm.core.Method
 import org.spectral.asm.core.code.Instruction
 import java.util.*
-import java.util.function.Function
 import kotlin.collections.HashMap
+import kotlin.math.max
 import org.spectral.asm.core.code.Exception as ExceptionBlock
 
 /**
@@ -158,7 +157,7 @@ object MethodAnalyzer {
      * Executes a instruction from a method and updates the provided data maps and analysis result values.
      *
      * @param method Method
-     * @param insn Instruction
+     * @param initialInsn Instruction
      * @param stack MutableList<StackContext>
      * @param locals MutableList<StackContext>
      * @param handlers HashMap<Instruction, MutableList<Exception>>
@@ -167,7 +166,7 @@ object MethodAnalyzer {
      */
     private fun execute(
             method: Method,
-            insn: Instruction,
+            initialInsn: Instruction,
             stack: MutableList<StackContext>,
             locals: MutableList<StackContext>,
             handlers: HashMap<Instruction, MutableList<ExceptionBlock>>,
@@ -175,20 +174,25 @@ object MethodAnalyzer {
             result: AnalyzerResult
     ) {
         /**
+         * The current instruction being executed.
+         */
+        var insn = initialInsn
+
+        /**
          * Whether the execution is complete.
          */
         var complete = false
 
         /**
-         * The next instructions for execution. We can have multiple in the event of a logical branch
+         * The successing instructions for execution. We can have multiple in the event of a logical branch
          * in the code.
          */
-        val nextInstructions = mutableListOf<Instruction>()
+        val successors = mutableListOf<Instruction>()
 
         /**
          * The current execution frame being executed.
          */
-        var currentFrame: Frame
+        var currentFrame: Frame? = null
 
         /*
          * Loop until we break out.
@@ -199,12 +203,123 @@ object MethodAnalyzer {
              * Based on the opcode and what it does, we instantiate the [currentFrame] appropriately.
              */
             when(insn.opcode) {
-                NOP -> {
-                    currentFrame = Frame(NOP)
+                -1 -> {
+                    currentFrame = null
                 }
+                NOP -> { currentFrame = Frame(NOP) }
                 ACONST_NULL -> {
                     currentFrame = LdcFrame(insn.opcode, null)
+                    stack.push(StackContext(Any::class, currentFrame, "java/lang/Object"))
                 }
+                ICONST_M1,
+                ICONST_0,
+                ICONST_1,
+                ICONST_2,
+                ICONST_3,
+                ICONST_4,
+                ICONST_5 -> {
+                    currentFrame = LdcFrame(insn.opcode, insn.opcode - 3)
+                    stack.push(StackContext(Int::class, currentFrame))
+                }
+                LCONST_0,
+                LCONST_1 -> {
+                    currentFrame = LdcFrame(insn.opcode, insn.opcode - 9)
+                    stack.pushWide(StackContext(Long::class, currentFrame))
+                }
+                FCONST_0,
+                FCONST_1,
+                FCONST_2 -> {
+                    currentFrame = LdcFrame(insn.opcode, insn.opcode - 11)
+                    stack.push(StackContext(Float::class, currentFrame))
+                }
+            }
+
+            /*
+             * Post opcode processing. We dont care about labels for these checks so Skip opcodes of value -1.
+             */
+            if(currentFrame != null) {
+                result.maxStack = max(result.maxStack, stack.size)
+                result.maxLocals = max(result.maxLocals, locals.size)
+
+                val thisFrame = result.frames.computeIfAbsent(insn) { mutableListOf() }
+                thisFrame.add(currentFrame)
+
+                /*
+                 * Update frame LVT.
+                 */
+                for(i in locals.indices) {
+                    val ctx = locals.getOrNull(i)
+                    if(ctx == null) {
+                        currentFrame.pushLocal(Value(ValueType.NULL))
+                    } else {
+                        val type = ctx.valueType
+                        val desc = if(type == ValueType.UNINITIALIZED_THIS) method.owner.name else ctx.initType
+                        currentFrame.pushLocal(Value(type, desc))
+                    }
+                }
+
+                /*
+                 * Update frame stack.
+                 */
+                for(i in stack.indices) {
+                    val ctx = stack.getOrNull(i) ?: throw IllegalStateException()
+                    val type = ctx.valueType
+                    val desc = if(type == ValueType.UNINITIALIZED_THIS) method.owner.name else ctx.initType
+                    currentFrame.pushStack(Value(type, desc))
+                }
+            }
+
+            /*
+             * Deal with JVM exception handlers. Get the exception handler block the current
+             * instruction is in. If the instruction is not apart of a handler, continue without jumping.
+             */
+            handlers[insn]?.forEach { block ->
+                if(jumps.add(AbstractMap.SimpleEntry(insn, block.handler!!))) {
+                    val newStack = mutableListOf<StackContext>()
+                    newStack.push(StackContext(ArgumentFrame(-1, -1), block.catchType?.name ?: "java/lang/Throwable"))
+                    val newLocals = mutableListOf<StackContext>()
+                    newLocals.addAll(locals)
+                    /*
+                     * Jump and execute the jumped instruction.
+                     */
+                    execute(method, block.handler!!, newStack, newLocals, handlers, jumps, result)
+                }
+            }
+
+            /*
+             * Exit the loop if the execution is complete.
+             */
+            if(complete) {
+                return
+            }
+
+            /*
+             * Jump to the next instruction if any exist.
+             */
+            if(successors.isNotEmpty()) {
+                successors.forEach { successor ->
+                    if(jumps.add(AbstractMap.SimpleEntry(insn, successor))) {
+                        val newStack = mutableListOf<StackContext>()
+                        newStack.addAll(stack)
+                        val newLocals = mutableListOf<StackContext>()
+                        newLocals.addAll(locals)
+
+                        /*
+                         * Execute the successor instruction jump.
+                         */
+                        execute(method, successor, newStack, newLocals, handlers, jumps, result)
+                    }
+                }
+
+                /*
+                 * Break out of the loop.
+                 */
+                return
+            } else {
+                /*
+                 * Continue to the next instruction
+                 */
+                insn = insn.next ?: return
             }
         }
     }

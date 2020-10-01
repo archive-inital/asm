@@ -18,6 +18,8 @@
 
 package org.spectral.asm.analyzer.frame
 
+import org.spectral.asm.analyzer.value.Value
+
 /**
  * Represents a instruction frame during a method execution.
  *
@@ -42,6 +44,16 @@ open class Frame(val opcode: Int) {
     open val isConstant: Boolean = calculateConstant()
 
     /**
+     * The stack of values at this instruction frame.
+     */
+    val stack = mutableListOf<Value>()
+
+    /**
+     * The local variable table at this instruction frame.
+     */
+    val locals = mutableListOf<Value>()
+
+    /**
      * Calculates whether this frame has a constant pushed value.
      *
      * @return Boolean
@@ -53,6 +65,24 @@ open class Frame(val opcode: Int) {
         }
 
         return ret
+    }
+
+    /**
+     * Pushes a value type to the stack.
+     *
+     * @param value Value
+     */
+    fun pushStack(value: Value) {
+       this.stack.add(value)
+    }
+
+    /**
+     * Loads a value to the LVT of this frame.
+     *
+     * @param value Value
+     */
+    fun pushLocal(value: Value) {
+       this.locals.add(value)
     }
 
 
