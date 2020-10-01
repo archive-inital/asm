@@ -594,6 +594,20 @@ object MethodAnalyzer {
                 }
                 JSR -> throw UnsupportedOperationException("JSR opcode not supported in JVM 8+")
                 RET -> throw UnsupportedOperationException("RET opcode not supported in JVM 8+")
+                TABLESWITCH -> {
+                    val frame = stack.pop().value!!
+                    val cast = insn as TableSwitchInstruction
+                    currentFrame = SwitchFrame(insn.opcode, frame, cast.labels, cast.default!!)
+                    successors.addAll(cast.labels)
+                    successors.add(cast.default!!)
+                }
+                LOOKUPSWITCH -> {
+                    val frame = stack.pop().value!!
+                    val cast = insn as LookupSwitchInstruction
+                    currentFrame = SwitchFrame(insn.opcode, frame, cast.labels, cast.default!!)
+                    successors.addAll(cast.labels)
+                    successors.add(cast.default!!)
+                }
             }
 
             /*
