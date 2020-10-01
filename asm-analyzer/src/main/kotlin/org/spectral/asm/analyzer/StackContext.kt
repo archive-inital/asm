@@ -19,12 +19,14 @@
 package org.spectral.asm.analyzer
 
 import com.google.common.primitives.Primitives
+import org.spectral.asm.analyzer.frame.ArgumentFrame
 import org.spectral.asm.analyzer.frame.Frame
 import org.spectral.asm.analyzer.value.ValueType
 import kotlin.reflect.KClass
 
 /**
- * Represents a snapshot in time of the JVM stack during an execution step.
+ * Represents a snapshot in time of the JVM stack during an execution step or
+ * execution frame.
  *
  * @constructor
  */
@@ -67,6 +69,21 @@ class StackContext {
      * @constructor
      */
     constructor(type: KClass<*>, value: Frame) : this(type, value, null)
+
+    /**
+     * Creates a stack context from an argument execution frame.
+     *
+     * @param frame ArgumentFrame
+     * @param type String
+     * @constructor
+     */
+    constructor(frame: ArgumentFrame, type: String) {
+        this.isInitialized = false
+        this.isThis = true
+        this.type = Any::class
+        this.value = frame
+        this.initType = type
+    }
 
     /**
      * Initializes the stack context.

@@ -18,21 +18,20 @@
 
 package org.spectral.asm.analyzer.frame
 
-import org.spectral.asm.core.code.Instruction
 import org.spectral.asm.analyzer.value.Value
 
 /**
  * Represents a instruction frame during a method execution.
  *
- * @property insn Instruction
+ * @property opcode Int
  * @constructor
  */
-open class Frame(val insn: Instruction) {
+abstract class Frame(val opcode: Int) {
 
     /**
      * Whether the frame is pushing a constant value to the stack.
      */
-    val isConstant: Boolean = calculateConstant()
+    open val isConstant: Boolean = calculateConstant()
 
     /**
      * The parent frames which contributed to this frames value.
@@ -85,4 +84,6 @@ open class Frame(val insn: Instruction) {
     fun pushLocal(value: Value) {
        this.locals.add(value)
     }
+
+
 }
