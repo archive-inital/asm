@@ -156,6 +156,10 @@ class Code(val method: Method) {
         this.instructions.add(TypeInstruction(opcode, ClassRef(type)))
     }
 
+    internal fun visitTableSwitchInsn(min: Int, max: Int, default: AsmLabel?, labels: Array<AsmLabel>) {
+        this.instructions.add(TableSwitchInstruction(min, max, default?.let { getOrCreateLabel(it) }, labels.map { getOrCreateLabel(it) }.toList()))
+    }
+
     internal fun visitMaxs(maxStack: Int, maxLocals: Int) {
         this.maxStack = maxStack
         this.maxLocals = maxLocals
