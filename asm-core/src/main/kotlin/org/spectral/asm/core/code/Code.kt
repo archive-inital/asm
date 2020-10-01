@@ -152,6 +152,10 @@ class Code(val method: Method) {
         this.instructions.add(JumpInstruction(opcode, getOrCreateLabel(label)))
     }
 
+    internal fun visitTypeInsn(opcode: Int, type: String) {
+        this.instructions.add(TypeInstruction(opcode, ClassRef(type)))
+    }
+
     internal fun visitMaxs(maxStack: Int, maxLocals: Int) {
         this.maxStack = maxStack
         this.maxLocals = maxLocals
