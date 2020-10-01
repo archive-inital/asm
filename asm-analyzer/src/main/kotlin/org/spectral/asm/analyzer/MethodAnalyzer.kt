@@ -80,5 +80,6 @@ object MethodAnalyzer {
         }
 
         throw Exception()
+
     }
 }
