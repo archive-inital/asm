@@ -23,6 +23,7 @@ import org.objectweb.asm.Opcodes.ASM9
 import org.objectweb.asm.Type
 import org.spectral.asm.core.code.Code
 import java.lang.reflect.Modifier
+import org.objectweb.asm.Label as AsmLabel
 
 /**
  * Represents a Java method which is contained within a class.
@@ -111,10 +112,11 @@ class Method(val owner: Class) : MethodVisitor(ASM9) {
          */
     }
 
-    override fun visitMaxs(maxStack: Int, maxLocals: Int) {
-        code.maxStack = maxStack
-        code.maxLocals = maxLocals
-    }
+    override fun visitTryCatchBlock(start: AsmLabel, end: AsmLabel, handler: AsmLabel?, type: String?)  = code.visitTryCatchBlock(start, end, handler, type)
+    override fun visitLabel(label: AsmLabel) = code.visitLabel(label)
+    override fun visitLineNumber(line: Int, start: AsmLabel) = code.visitLineNumber(line, start)
+    override fun visitInsn(opcode: Int) = code.visitInsn(opcode)
+    override fun visitMaxs(maxStack: Int, maxLocals: Int) = code.visitMaxs(maxStack, maxLocals)
 
     override fun visitEnd() {
         /*
