@@ -79,6 +79,13 @@ class ClassPool {
     }
 
     /**
+     * Initializes all references in each class in the pool.
+     */
+    fun init() {
+        classMap.values.forEach { it.init() }
+    }
+
+    /**
      * Gets a [Class] with a given class name.
      *
      * @param name String

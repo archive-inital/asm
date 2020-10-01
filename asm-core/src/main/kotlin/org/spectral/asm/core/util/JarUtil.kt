@@ -59,7 +59,7 @@ object JarUtil {
      * @param file File
      * @param pool ClassPool
      */
-    fun writeToJar(file: File, pool: ClassPool) {
+    fun writeJar(file: File, pool: ClassPool) {
         if(file.exists()) {
             file.delete()
         }
@@ -77,7 +77,7 @@ object JarUtil {
             /*
              * Validate data flow in class.
              */
-            validateClass(cls.name, bytes)
+            validateClassBytes( bytes)
 
             jos.putNextEntry(JarEntry(cls.name + ".class"))
             jos.write(bytes)
@@ -90,10 +90,9 @@ object JarUtil {
     /**
      * Validates that the [bytes] pass the JVM checks and will execute correctly.
      *
-     * @param name String
      * @param bytes ByteArray
      */
-    private fun validateClass(name: String, bytes: ByteArray) {
+    private fun validateClassBytes(bytes: ByteArray) {
        try {
            val reader = ClassReader(bytes)
            val writer = ClassWriter(reader, 0)

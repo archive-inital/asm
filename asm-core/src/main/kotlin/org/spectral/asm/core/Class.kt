@@ -20,6 +20,7 @@ package org.spectral.asm.core
 
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes.ASM9
+import org.spectral.asm.core.reference.ClassRef
 
 /**
  * Represents an Java class loaded from it's bytecode.
@@ -29,12 +30,12 @@ class Class : ClassVisitor(ASM9) {
     /**
      * The [ClassPool] this class belongs in.
      */
-    lateinit var pool: ClassPool
+    lateinit var pool: ClassPool internal set
 
     /**
      * The name of the class.
      */
-    lateinit var name: String
+    lateinit var name: String internal set
 
     /**
      * The source file name this class was loaded from.
@@ -52,14 +53,41 @@ class Class : ClassVisitor(ASM9) {
     var version = 0
 
     /**
-     * The name of the class this object extends. By default this is "java/lang/Object".
+     * The parent super class reference.
      */
-    lateinit var superName: String
+    lateinit var parent: ClassRef
 
     /**
      * The class names of interfaces this class implements.
      */
-    var interfaces = mutableListOf<String>()
+    val interfaces = mutableListOf<ClassRef>()
+
+    /**
+     * The classes which extend this class.
+     */
+    val children = mutableListOf<Class>()
+
+    /**
+     * The classes which implement this class.
+     */
+    val implementers = mutableListOf<Class>()
+
+    /**
+     * Initialize the class.
+     */
+    internal fun init() {
+        /*
+         * Build References.
+         */
+        this.parent.init(this.pool)
+        this.interfaces.forEach { it.init(this.pool) }
+
+        /*
+         * Build hierarchy graph.
+         */
+        this.parent.ref?.children?.add(this)
+        this.interfaces.mapNotNull { it.ref }.forEach { it.implementers.add(this) }
+    }
 
     /*
      * VISITOR METHODS
@@ -76,8 +104,8 @@ class Class : ClassVisitor(ASM9) {
         this.version = version
         this.access = access
         this.name = name
-        this.superName = superName
-        this.interfaces = interfaces.toMutableList()
+        this.parent = ClassRef(superName)
+        this.interfaces.addAll(interfaces.map { ClassRef(it) })
     }
 
     override fun visitSource(source: String, debug: String?) {
