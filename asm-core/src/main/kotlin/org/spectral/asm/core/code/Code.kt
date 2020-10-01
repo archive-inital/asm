@@ -20,10 +20,7 @@ package org.spectral.asm.core.code
 
 import org.objectweb.asm.MethodVisitor
 import org.spectral.asm.core.Method
-import org.spectral.asm.core.code.type.IncInstruction
-import org.spectral.asm.core.code.type.IntInstruction
-import org.spectral.asm.core.code.type.LVTInstruction
-import org.spectral.asm.core.code.type.LdcInstruction
+import org.spectral.asm.core.code.type.*
 import org.spectral.asm.core.reference.ClassRef
 import java.util.*
 import org.objectweb.asm.Label as AsmLabel
@@ -149,6 +146,10 @@ class Code(val method: Method) {
 
     internal fun visitVarInsn(opcode: Int, index: Int) {
         this.instructions.add(LVTInstruction(opcode, index))
+    }
+
+    internal fun visitJumpInsn(opcode: Int, label: AsmLabel) {
+        this.instructions.add(JumpInstruction(opcode, getOrCreateLabel(label)))
     }
 
     internal fun visitMaxs(maxStack: Int, maxLocals: Int) {
