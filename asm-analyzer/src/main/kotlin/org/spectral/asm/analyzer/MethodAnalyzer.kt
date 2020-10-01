@@ -28,6 +28,7 @@ import org.spectral.asm.analyzer.value.Value
 import org.spectral.asm.analyzer.value.ValueType
 import org.spectral.asm.core.Method
 import org.spectral.asm.core.code.Instruction
+import org.spectral.asm.core.code.type.IncInstruction
 import org.spectral.asm.core.code.type.IntInstruction
 import org.spectral.asm.core.code.type.LVTInstruction
 import org.spectral.asm.core.code.type.LdcInstruction
@@ -531,6 +532,12 @@ object MethodAnalyzer {
                 LNEG -> currentFrame = doUnaryMath(insn.opcode, stack, Long::class)
                 FNEG -> currentFrame = doUnaryMath(insn.opcode, stack, Float::class)
                 DNEG -> currentFrame = doUnaryMath(insn.opcode, stack, Double::class)
+                IINC -> {
+                    val cast = insn as IncInstruction
+                    locals.assureSize(cast.index)
+                    val ctx = locals[cast.index]!!
+                    currentFrame = LocalFrame(insn.opcode, cast.index, ctx.value)
+                }
             }
 
             /*
