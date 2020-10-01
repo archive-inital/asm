@@ -608,6 +608,13 @@ object MethodAnalyzer {
                     successors.addAll(cast.labels)
                     successors.add(cast.default!!)
                 }
+
+
+                ATHROW -> {
+                    val throwable = stack.pop().value!!
+                    currentFrame = ThrowFrame(throwable)
+                    complete = true
+                }
             }
 
             /*
