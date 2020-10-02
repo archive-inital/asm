@@ -106,6 +106,12 @@ class Code(val method: Method) {
         }
     }
 
+    var name = "tob"
+
+    init {
+
+    }
+
     /*
      * VISITOR METHOD
      * Delegated from the [Method] object's visitor methods.

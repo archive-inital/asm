@@ -12,7 +12,16 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: Make gradlew executable
+      - name: Make gradlew Executable
         run: chmod +x gradlew
-      - name: Build gradle
+      - name: Build
         run: ./gradlew build -x test
+      - name: Test
+        run: ./gradlew check
+      - name: Post Discord Status
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_ACTIONS_WEBHOOK }}
+          username: Spectral CI
+          avatar_url: https://i.imgur.com/2snlXOl.png
