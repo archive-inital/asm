@@ -18,12 +18,16 @@
 
 package org.spectral.asm.analyzer.frame
 
-import org.objectweb.asm.Opcodes
-
-class ThrowFrame(val throwable: Frame) : Frame(Opcodes.ATHROW) {
+class MethodFrame(opcode: Int, val owner: String, val name: String, val desc: String, val instance: Frame?, val args: List<Frame?>) : Frame(opcode) {
 
     init {
-        this.throwable.reads.add(this)
+        if(this.instance != null) {
+            this.instance.reads.add(this)
+        }
+
+        args.filterNotNull().forEach { arg ->
+            arg.reads.add(this)
+        }
     }
 
 }

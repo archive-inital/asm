@@ -20,10 +20,6 @@ package org.spectral.asm.analyzer.frame
 
 import org.objectweb.asm.Opcodes
 
-class ThrowFrame(val throwable: Frame) : Frame(Opcodes.ATHROW) {
-
-    init {
-        this.throwable.reads.add(this)
-    }
+class NewFrame(val type: String) : Frame(Opcodes.NEW) {
 
 }

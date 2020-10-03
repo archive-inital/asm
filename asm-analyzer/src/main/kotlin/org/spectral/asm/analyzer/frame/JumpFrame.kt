@@ -23,7 +23,7 @@ import org.spectral.asm.core.code.Instruction
 class JumpFrame(opcode: Int, val comparators: List<Frame>, vararg val targets: Instruction) : Frame(opcode) {
 
     init {
-        this.comparators.forEach { it.children.add(this) }
+        this.comparators.forEach { it.reads.add(this) }
     }
 
 }

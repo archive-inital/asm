@@ -41,7 +41,7 @@ class AnalyzerResult {
     /**
      * The instruction frames in this analysis mapped to the instruction that was executed.
      */
-    val frames = hashMapOf<Instruction, MutableList<Frame>>()
+    lateinit var frames: LinkedHashMap<Instruction, MutableList<Frame>>
 
     companion object {
         /**

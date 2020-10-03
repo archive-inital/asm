@@ -21,7 +21,7 @@ package org.spectral.asm.analyzer.frame
 class MathFrame(opcode: Int, vararg val targets: Frame) : Frame(opcode) {
 
     init {
-        targets.forEach { it.children.add(this) }
+        targets.forEach { it.reads.add(this) }
     }
 
 }

@@ -31,6 +31,7 @@ import org.spectral.asm.core.code.Instruction
 import org.spectral.asm.core.code.type.*
 import java.util.*
 import kotlin.collections.HashMap
+import kotlin.collections.LinkedHashMap
 import kotlin.math.max
 import kotlin.reflect.KClass
 import org.spectral.asm.core.code.Exception as ExceptionBlock
@@ -61,6 +62,7 @@ object MethodAnalyzer {
          * The analysis result object.
          */
         val result = AnalyzerResult()
+        result.frames = LinkedHashMap()
 
         /**
          * A list of execution stack states or (contexts) at each execution frame (each instruction).
@@ -93,11 +95,11 @@ object MethodAnalyzer {
             val klass = PrimitiveUtils.forName(type.className)
 
             val opcode = when(klass) {
-                Int::class -> Opcodes.ISTORE
-                Long::class -> Opcodes.LSTORE
-                Double::class -> Opcodes.DSTORE
-                Float::class -> Opcodes.FSTORE
-                else -> Opcodes.ASTORE
+                Int::class -> ISTORE
+                Long::class -> LSTORE
+                Double::class -> DSTORE
+                Float::class -> FSTORE
+                else -> ASTORE
             }
 
             val frame = ArgumentFrame(opcode, lvtIndex)
@@ -652,10 +654,125 @@ object MethodAnalyzer {
                     val instance = stack.pop().value
                     currentFrame = FieldFrame(insn.opcode, cast.field.owner.name, cast.field.name, cast.field.desc, instance, obj)
                 }
+                INVOKEVIRTUAL -> {
+                    val cast = insn as MethodInstruction
+                    val type = Type.getReturnType(cast.method.desc)
+                    val klass = PrimitiveUtils.forName(type.className)
+                    val args = mutableListOf<Frame?>()
+                    Type.getArgumentTypes(cast.method.desc).forEach { _ ->
+                        args.add(0, stack.pop().value)
+                    }
+                    currentFrame = MethodFrame(insn.opcode, cast.method.owner.name, cast.method.name, cast.method.desc, stack.pop().value, args)
+                    if(type.sort != Type.VOID) {
+                        if(klass == null) {
+                            stack.push(StackContext(Any::class, currentFrame, type.internalName))
+                        } else {
+                            stack.push(StackContext(klass, currentFrame))
+                        }
+                    }
+                }
+                INVOKESPECIAL -> {
+                    val cast = insn as MethodInstruction
+                    val type = Type.getReturnType(cast.method.desc)
+                    val klass = PrimitiveUtils.forName(type.className)
+                    val args = mutableListOf<Frame?>()
+                    Type.getArgumentTypes(cast.method.desc).forEach { _ ->
+                        args.add(0, stack.pop().value!!)
+                    }
+                    val instance = stack.pop()
+                    instance.initialize()
+                    currentFrame = MethodFrame(insn.opcode, cast.method.owner.name, cast.method.name, cast.method.desc, instance.value, args)
+                    if(type.sort != Type.VOID) {
+                        if(klass == null) {
+                            stack.push(StackContext(Any::class, currentFrame, type.internalName))
+                        } else {
+                            stack.push(StackContext(klass, currentFrame))
+                        }
+                    }
+                }
+                INVOKESTATIC -> {
+                    val cast = insn as MethodInstruction
+                    val type = Type.getReturnType(cast.method.desc)
+                    val klass = PrimitiveUtils.forName(type.className)
+                    val args = mutableListOf<Frame?>()
+                    Type.getArgumentTypes(cast.method.desc).forEach {
+                        args.add(0, stack.pop().value)
+                    }
+                    currentFrame = MethodFrame(insn.opcode, cast.method.owner.name, cast.method.name, cast.method.desc, null, args)
+                    if(type.sort != Type.VOID) {
+                        if(klass == null) {
+                            stack.push(StackContext(Any::class, currentFrame, type.internalName))
+                        } else {
+                            stack.push(StackContext(klass, currentFrame))
+                        }
+                    }
+                }
+                INVOKEINTERFACE -> {
+                    val cast = insn as MethodInstruction
+                    val type = Type.getReturnType(cast.method.desc)
+                    val klass = PrimitiveUtils.forName(type.className)
+                    val args = mutableListOf<Frame?>()
+                    Type.getArgumentTypes(cast.method.desc).forEach {
+                        args.add(0, stack.pop().value)
+                    }
+                    currentFrame = MethodFrame(insn.opcode, cast.method.owner.name, cast.method.name, cast.method.desc, stack.pop().value, args)
+                    if(type.sort != Type.VOID) {
+                        if(klass == null) {
+                            stack.push(StackContext(Any::class, currentFrame, type.internalName))
+                        } else {
+                            stack.push(StackContext(klass, currentFrame))
+                        }
+                    }
+                }
+                NEW -> {
+                    val cast = insn as TypeInstruction
+                    currentFrame = NewFrame(cast.type.name)
+                    stack.push(StackContext(currentFrame))
+                }
+                NEWARRAY -> {
+                    val length = stack.pop().value!!
+                    val cast = insn as IntInstruction
+                    currentFrame = NewArrayFrame(insn.opcode, PrimitiveUtils.forArrayId(cast.operand).simpleName!!, length)
+                    val desc = "[" + Type.getType(PrimitiveUtils.forArrayId(cast.operand).java).descriptor
+                    stack.push(StackContext(Any::class, currentFrame, desc))
+                }
+                ARRAYLENGTH -> {
+                    val array = stack.pop().value!!
+                    currentFrame = ArrayLengthFrame(array)
+                    stack.push(StackContext(Int::class, currentFrame))
+                }
                 ATHROW -> {
                     val throwable = stack.pop().value!!
                     currentFrame = ThrowFrame(throwable)
                     complete = true
+                }
+                CHECKCAST -> {
+                    val cast = insn as TypeInstruction
+                    val obj = StackContext(Any::class, stack.first().value!!, cast.type.name)
+                    stack.pop()
+                    stack.push(obj)
+                    currentFrame = CheckCastFrame(obj.value!!)
+                }
+                INSTANCEOF -> {
+                    currentFrame = InstanceOfFrame(stack.pop().value!!)
+                    stack.push(StackContext(Int::class, currentFrame))
+                }
+                MONITORENTER,
+                MONITOREXIT -> {
+                    currentFrame = MonitorFrame(insn.opcode, stack.pop().value!!)
+                }
+                MULTIANEWARRAY -> {
+                    val cast = insn as MultiNewArrayInstruction
+                    val sizes = mutableListOf<Frame>()
+                    for(i in 0 until cast.dims) {
+                        sizes.add(stack.pop().value!!)
+                    }
+                    currentFrame = MultiANewArrayFrame(sizes)
+                    var desc = cast.desc
+                    for(i in 0 until cast.dims) {
+                        desc = "[" + desc
+                    }
+                    stack.push(StackContext(Any::class, currentFrame, desc))
                 }
             }
 

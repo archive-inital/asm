@@ -21,8 +21,8 @@ package org.spectral.asm.analyzer.frame
 class SwapFrame(opcode: Int, val top: Frame?, val bottom: Frame?) : Frame(opcode) {
 
     init {
-        this.top?.children?.add(this)
-        this.bottom?.children?.add(this)
+        this.top?.reads?.add(this)
+        this.bottom?.reads?.add(this)
     }
 
 }

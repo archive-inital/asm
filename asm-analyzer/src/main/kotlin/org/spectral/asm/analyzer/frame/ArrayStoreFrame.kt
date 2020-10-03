@@ -21,12 +21,12 @@ package org.spectral.asm.analyzer.frame
 class ArrayStoreFrame(opcode: Int, val value: Frame, val index: Frame, val array: Frame) : Frame(opcode) {
 
     init {
-        this.value.children.add(this)
-        this.index.children.add(this)
-        this.array.children.add(this)
-        this.parents.add(this.value)
-        this.parents.add(this.index)
-        this.parents.add(this.array)
+        this.value.reads.add(this)
+        this.index.reads.add(this)
+        this.array.reads.add(this)
+        this.writes.add(this.value)
+        this.writes.add(this.index)
+        this.writes.add(this.array)
     }
 
 }

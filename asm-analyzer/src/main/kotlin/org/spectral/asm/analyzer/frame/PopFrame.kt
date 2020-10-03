@@ -21,7 +21,7 @@ package org.spectral.asm.analyzer.frame
 class PopFrame(opcode: Int, vararg val removed: Frame?) : Frame(opcode) {
 
     init {
-        this.removed.asList().forEach { it?.children?.add(this) }
+        this.removed.asList().forEach { it?.reads?.add(this) }
     }
 
 }

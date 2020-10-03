@@ -22,11 +22,11 @@ class FieldFrame(opcode: Int, val owner: String, val name: String, val desc: Str
 
     init {
         if(this.instance != null) {
-            this.instance.children.add(this)
+            this.instance.reads.add(this)
         }
 
         if(this.obj != null) {
-            this.obj.children.add(this)
+            this.obj.reads.add(this)
         }
     }
 

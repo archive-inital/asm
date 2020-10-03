@@ -37,12 +37,12 @@ open class Frame(val opcode: Int) {
     /**
      * The parent frames which contributed to this frames value.
      */
-    val parents = mutableListOf<Frame>()
+    val writes = mutableListOf<Frame>()
 
     /**
      * The frames this frame contributed values to.
      */
-    val children = mutableListOf<Frame>()
+    val reads = mutableListOf<Frame>()
 
     /**
      * Whether the frame is pushing a constant value to the stack.
@@ -66,7 +66,7 @@ open class Frame(val opcode: Int) {
      */
     private fun calculateConstant(): Boolean {
         var ret = true
-        parents.forEach { parent ->
+        writes.forEach { parent ->
             ret = ret and parent.isConstant
         }
 
