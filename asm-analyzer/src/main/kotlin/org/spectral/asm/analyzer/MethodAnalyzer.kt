@@ -31,6 +31,7 @@ import org.spectral.asm.core.code.Instruction
 import org.spectral.asm.core.code.type.*
 import java.util.*
 import kotlin.collections.HashMap
+import kotlin.collections.LinkedHashMap
 import kotlin.math.max
 import kotlin.reflect.KClass
 import org.spectral.asm.core.code.Exception as ExceptionBlock
@@ -61,7 +62,7 @@ object MethodAnalyzer {
          * The analysis result object.
          */
         val result = AnalyzerResult()
-        result.frames = hashMapOf()
+        result.frames = LinkedHashMap()
 
         /**
          * A list of execution stack states or (contexts) at each execution frame (each instruction).

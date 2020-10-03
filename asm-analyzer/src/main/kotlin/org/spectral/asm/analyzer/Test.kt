@@ -37,6 +37,5 @@ object Test {
         val method = cls.findMethod("init", "()V")!!
 
         val analyzer = MethodAnalyzer.analyze(method)
-
     }
 }

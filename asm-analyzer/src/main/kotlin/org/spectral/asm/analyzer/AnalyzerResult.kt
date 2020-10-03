@@ -41,7 +41,7 @@ class AnalyzerResult {
     /**
      * The instruction frames in this analysis mapped to the instruction that was executed.
      */
-    lateinit var frames: HashMap<Instruction, MutableList<Frame>>
+    lateinit var frames: LinkedHashMap<Instruction, MutableList<Frame>>
 
     companion object {
         /**
