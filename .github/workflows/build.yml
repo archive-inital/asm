@@ -2,10 +2,7 @@ name: build
 on: push
 jobs:
   build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
@@ -23,5 +20,5 @@ jobs:
         if: always()
         with:
           webhook: ${{ secrets.DISCORD_ACTIONS_WEBHOOK }}
-          username: Spectral CI
+          username: spectral-ci
           avatar_url: https://i.imgur.com/2snlXOl.png

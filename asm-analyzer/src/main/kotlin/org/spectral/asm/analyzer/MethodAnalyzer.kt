@@ -61,6 +61,7 @@ object MethodAnalyzer {
          * The analysis result object.
          */
         val result = AnalyzerResult()
+        result.frames = hashMapOf()
 
         /**
          * A list of execution stack states or (contexts) at each execution frame (each instruction).
@@ -93,11 +94,11 @@ object MethodAnalyzer {
             val klass = PrimitiveUtils.forName(type.className)
 
             val opcode = when(klass) {
-                Int::class -> Opcodes.ISTORE
-                Long::class -> Opcodes.LSTORE
-                Double::class -> Opcodes.DSTORE
-                Float::class -> Opcodes.FSTORE
-                else -> Opcodes.ASTORE
+                Int::class -> ISTORE
+                Long::class -> LSTORE
+                Double::class -> DSTORE
+                Float::class -> FSTORE
+                else -> ASTORE
             }
 
             val frame = ArgumentFrame(opcode, lvtIndex)
@@ -727,11 +728,50 @@ object MethodAnalyzer {
                     currentFrame = NewFrame(cast.type.name)
                     stack.push(StackContext(currentFrame))
                 }
-
+                NEWARRAY -> {
+                    val length = stack.pop().value!!
+                    val cast = insn as IntInstruction
+                    currentFrame = NewArrayFrame(insn.opcode, PrimitiveUtils.forArrayId(cast.operand).simpleName!!, length)
+                    val desc = "[" + Type.getType(PrimitiveUtils.forArrayId(cast.operand).java).descriptor
+                    stack.push(StackContext(Any::class, currentFrame, desc))
+                }
+                ARRAYLENGTH -> {
+                    val array = stack.pop().value!!
+                    currentFrame = ArrayLengthFrame(array)
+                    stack.push(StackContext(Int::class, currentFrame))
+                }
                 ATHROW -> {
                     val throwable = stack.pop().value!!
                     currentFrame = ThrowFrame(throwable)
                     complete = true
+                }
+                CHECKCAST -> {
+                    val cast = insn as TypeInstruction
+                    val obj = StackContext(Any::class, stack.first().value!!, cast.type.name)
+                    stack.pop()
+                    stack.push(obj)
+                    currentFrame = CheckCastFrame(obj.value!!)
+                }
+                INSTANCEOF -> {
+                    currentFrame = InstanceOfFrame(stack.pop().value!!)
+                    stack.push(StackContext(Int::class, currentFrame))
+                }
+                MONITORENTER,
+                MONITOREXIT -> {
+                    currentFrame = MonitorFrame(insn.opcode, stack.pop().value!!)
+                }
+                MULTIANEWARRAY -> {
+                    val cast = insn as MultiNewArrayInstruction
+                    val sizes = mutableListOf<Frame>()
+                    for(i in 0 until cast.dims) {
+                        sizes.add(stack.pop().value!!)
+                    }
+                    currentFrame = MultiANewArrayFrame(sizes)
+                    var desc = cast.desc
+                    for(i in 0 until cast.dims) {
+                        desc = "[" + desc
+                    }
+                    stack.push(StackContext(Any::class, currentFrame, desc))
                 }
             }
 
