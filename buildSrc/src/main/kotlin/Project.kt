@@ -33,6 +33,7 @@ object Plugin {
 object Library {
     private object Version {
         const val asm = "9.0-beta"
+        const val spectralLogger = "1.0.0"
     }
 
     const val asm = "org.ow2.asm:asm:${Version.asm}"
@@ -40,6 +41,7 @@ object Library {
     const val asmCommons = "org.ow2.asm:asm-commons:${Version.asm}"
     const val asmTree = "org.ow2.asm:asm-tree:${Version.asm}"
     const val asmAnalysis = "org.ow2.asm:asm-analysis:${Version.asm}"
+    const val spectralLogger = "org.spectral:logger:${Version.spectralLogger}"
 }
 
 fun DependencyHandlerScope.asm() {

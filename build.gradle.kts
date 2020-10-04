@@ -22,6 +22,8 @@ allprojects {
 
     dependencies {
         implementation(kotlin("stdlib"))
+        asm()
+        implementation(Library.spectralLogger)
     }
 
     tasks.withType<KotlinCompile> {
