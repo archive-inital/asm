@@ -18,6 +18,7 @@
 
 package org.spectral.asm.core
 
+import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
 import java.lang.reflect.Modifier
@@ -44,6 +45,21 @@ var MethodNode.owner: ClassNode
     set(value) {
         ownerValues[this] = value
     }
+
+/**
+ * The ASM [Type] of this method node.
+ */
+val MethodNode.type: Type get() = Type.getMethodType(this.desc)
+
+/**
+ * A list of ASM [Type]s for the arguments of this method.
+ */
+val MethodNode.argumentTypes: List<Type> get() = this.type.argumentTypes.toList()
+
+/**
+ * The ASM [Type] of this method's return value.
+ */
+val MethodNode.returnType: Type get() = this.type.returnType
 
 /**
  * The [ClassPool] this method's owner belongs in.

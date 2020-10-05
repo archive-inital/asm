@@ -18,6 +18,7 @@
 
 package org.spectral.asm.core
 
+import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldNode
 import java.lang.reflect.Modifier
@@ -42,6 +43,11 @@ var FieldNode.owner: ClassNode
     set(value) {
         ownerValues[this] = value
     }
+
+/**
+ * The ASM [Type] of this field node.
+ */
+val FieldNode.type: Type get() = Type.getType(this.desc)
 
 /**
  * The [ClassPool] of this field's owner.
