@@ -20,5 +20,5 @@ jobs:
         if: always()
         with:
           webhook: ${{ secrets.DISCORD_ACTIONS_WEBHOOK }}
-          username: spectral-ci
+          username: Spectral
           avatar_url: https://i.imgur.com/2snlXOl.png
