@@ -80,3 +80,8 @@ val MethodNode.isPrivate: Boolean get() = Modifier.isPrivate(this.access)
  * Whether this method is an abstract method.
  */
 val MethodNode.isAbstract: Boolean get() = Modifier.isAbstract(this.access)
+
+/**
+ * Whether this method is a native method type.
+ */
+val MethodNode.isNative: Boolean get() = Modifier.isNative(this.access)

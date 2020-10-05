@@ -18,6 +18,10 @@
 
 package org.spectral.asm.analyzer.method
 
+import org.objectweb.asm.tree.MethodNode
+import org.spectral.asm.core.isAbstract
+import org.spectral.asm.core.isNative
+
 /**
  * Analyzes the method execution to create a data-flow graph.
  *
@@ -26,5 +30,27 @@ package org.spectral.asm.analyzer.method
  */
 object MethodAnalyzer {
 
+    /**
+     * Runs the analysis on the the provided [method].
+     *
+     * @param method MethodNode
+     * @return AnalyzerResult
+     */
+    fun analyze(method: MethodNode): AnalyzerResult {
+        /*
+         * Abstract and native methods are not possible to analyze.
+         */
+        if(method.isAbstract || method.isNative) {
+            return AnalyzerResult.EMPTY_RESULT
+        }
 
+        /*
+         * The analysis result instance.
+         */
+        val result = AnalyzerResult()
+
+
+
+        return result
+    }
 }

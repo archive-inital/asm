@@ -77,8 +77,3 @@ val ClassNode.isAbstract: Boolean get() = Modifier.isAbstract(this.access)
  * Whether the class node is an interface class.
  */
 val ClassNode.isInterface: Boolean get() = Modifier.isInterface(this.access)
-
-/**
- * Whether the class node is a native class.
- */
-val ClassNode.isNative: Boolean get() = Modifier.isNative(this.access)
