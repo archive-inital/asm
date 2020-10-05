@@ -315,6 +315,55 @@ object MethodAnalyzer {
                         PopFrame(insn.opcode, obj.value!!, next.value!!)
                     }
                 }
+                DUP -> {
+                    val obj = stack[0]!!
+                    currentFrame = DupFrame(insn.opcode, obj.value!!)
+                    stack.add(0, obj)
+                }
+                DUP_X1 -> {
+                    val obj = stack[0]!!
+                    if(obj.type == Double::class || obj.type == Long::class) {
+                        throw IllegalArgumentException()
+                    }
+                    stack.add(2, obj)
+                    currentFrame = DupFrame(insn.opcode, obj.value!!)
+                }
+                DUP_X2 -> {
+                    val obj = stack[1]!!
+                    val first = stack[0]!!
+                    currentFrame = DupFrame(insn.opcode, first.value!!)
+                    if(obj.type == Double::class || obj.type == Long::class) {
+                        stack.add(2, stack[0]!!)
+                    } else {
+                        stack.add(3, stack[0]!!)
+                    }
+                }
+                DUP2 -> {
+                    val o = stack[0]!!
+                    val obj = stack[0]!!
+                    currentFrame = if(obj.type == Double::class || obj.type == Long::class) {
+                        stack.add(1, o)
+                        DupFrame(insn.opcode, o.value!!)
+                    } else {
+                        val o1 = stack[1]!!
+                        stack.add(2, o)
+                        stack.add(3, o1)
+                        DupFrame(insn.opcode, o.value!!, o1.value!!)
+                    }
+                }
+                DUP2_X1 -> {
+                    val o = stack[0]!!
+                    val obj = stack[0]!!
+                    currentFrame = if(obj.type == Double::class || obj.type == Long::class) {
+                        stack.add(2, o)
+                        DupFrame(insn.opcode, o.value!!)
+                    } else {
+                        val o1 = stack[1]!!
+                        stack.add(3, o)
+                        stack.add(4, o1)
+                        DupFrame(insn.opcode, o.value!!, o1.value!!)
+                    }
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
