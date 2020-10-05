@@ -18,5 +18,53 @@
 
 package org.spectral.asm.analyzer.method.frame
 
-class Frame {
+import org.objectweb.asm.util.Printer
+
+/**
+ * Represents an instruction execution step. NOT what the JVM refers to as a method frame.
+ *
+ * @property opcode Int
+ * @constructor
+ */
+class Frame(val opcode: Int) {
+
+    /**
+     * The mnemonic name of the instruction opcode.
+     */
+    val mnemonic = if(opcode == -1) "UNKNOWN" else Printer.OPCODES[opcode]
+
+    /**
+     * A list of [Frame] instances this frame contributed to creating or is a value dependency of.
+     */
+    val parents = mutableListOf<Frame>()
+
+    /**
+     * A list of [Frame] instances which contributed to this frame's state.
+     */
+    val children = mutableListOf<Frame>()
+
+    /**
+     * Whether this frame holds a constant value.
+     */
+    val isConstant: Boolean by lazy { calculateConstant() }
+
+    /**
+     * Calculates whether this frame holds a constant type.
+     * All the parent frames are accounted for and the result is inherited.
+     *
+     * @return Boolean
+     */
+    private fun calculateConstant(): Boolean {
+       var ret = true
+
+        parents.forEach { frame ->
+            ret = ret and frame.isConstant
+        }
+
+        return ret
+    }
+
+    override fun toString(): String {
+        return "FRAME[$mnemonic]"
+    }
 }
