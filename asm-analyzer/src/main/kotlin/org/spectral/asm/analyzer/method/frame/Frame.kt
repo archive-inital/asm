@@ -26,12 +26,12 @@ import org.objectweb.asm.util.Printer
  * @property opcode Int
  * @constructor
  */
-class Frame(val opcode: Int) {
+open class Frame(val opcode: Int) {
 
     /**
      * The mnemonic name of the instruction opcode.
      */
-    val mnemonic = if(opcode == -1) "UNKNOWN" else Printer.OPCODES[opcode]
+    open val mnemonic = if(opcode == -1) "UNKNOWN" else Printer.OPCODES[opcode]
 
     /**
      * A list of [Frame] instances this frame contributed to creating or is a value dependency of.
@@ -46,7 +46,7 @@ class Frame(val opcode: Int) {
     /**
      * Whether this frame holds a constant value.
      */
-    val isConstant: Boolean by lazy { calculateConstant() }
+    open val isConstant: Boolean by lazy { calculateConstant() }
 
     /**
      * Calculates whether this frame holds a constant type.

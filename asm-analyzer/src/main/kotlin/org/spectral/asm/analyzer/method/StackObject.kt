@@ -18,6 +18,7 @@
 
 package org.spectral.asm.analyzer.method
 
+import org.spectral.asm.analyzer.method.frame.ArgumentFrame
 import org.spectral.asm.analyzer.method.frame.Frame
 import org.spectral.asm.analyzer.method.value.ValueType
 import kotlin.reflect.KClass
@@ -76,6 +77,18 @@ class StackObject(val type: KClass<*>, val value: Frame?, desc: String?) {
      * @constructor
      */
     constructor(type: KClass<*>, value: Frame) : this(type, value, null)
+
+    /**
+     * Creates a stack object from an [ArgumentFrame] instance.
+     *
+     * @param frame ArgumentFrame
+     * @param type String
+     * @constructor
+     */
+    constructor(frame: ArgumentFrame, type: String) : this(Any::class, frame, type) {
+        this.isInitialized = false
+        this.isThis = true
+    }
 
     /**
      * Initialize the stack context value.
