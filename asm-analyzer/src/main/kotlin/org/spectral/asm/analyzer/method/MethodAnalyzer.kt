@@ -300,6 +300,21 @@ object MethodAnalyzer {
                 in IASTORE..AASTORE -> {
                     currentFrame = executeArrayStore(insn.opcode, stack)
                 }
+                POP -> {
+                    val value = stack.removeAt(0)!!
+                    currentFrame = PopFrame(insn.opcode, value.value!!)
+                }
+                POP2 -> {
+                    val obj = stack[0]!!
+                    currentFrame = if(obj.type == Double::class || obj.type == Long::class) {
+                        stack.removeAt(0)
+                        PopFrame(insn.opcode, obj.value!!)
+                    } else {
+                        stack.removeAt(0)
+                        val next = stack.removeAt(0)!!
+                        PopFrame(insn.opcode, obj.value!!, next.value!!)
+                    }
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
