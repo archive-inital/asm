@@ -31,11 +31,6 @@ allprojects {
         kotlinOptions.jvmTarget = Project.jvmVersion
     }
 
-    val sourcesJar by tasks.registering(Jar::class) {
-        classifier = "sources"
-        from(sourceSets.main.get().allSource)
-    }
-
     publishing {
         repositories {
             maven {
