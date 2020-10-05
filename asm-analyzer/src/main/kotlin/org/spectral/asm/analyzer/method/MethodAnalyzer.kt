@@ -364,6 +364,30 @@ object MethodAnalyzer {
                         DupFrame(insn.opcode, o.value!!, o1.value!!)
                     }
                 }
+                DUP2_X2 -> {
+                    val o = stack[0]!!
+                    var obj = stack[0]!!
+                    if(obj.type == Double::class || obj.type == Long::class) {
+                        obj = stack[1]!!
+                        currentFrame = DupFrame(insn.opcode, o.value!!)
+                        if(obj.type == Double::class || obj.type == Long::class) {
+                            stack.add(2, o)
+                        } else {
+                            stack.add(3, o)
+                        }
+                    } else {
+                        val o1 = stack[1]!!
+                        obj = stack[2]!!
+                        currentFrame = DupFrame(insn.opcode, o.value!!, o1.value!!)
+                        if(obj.type == Double::class || obj.type == Long::class) {
+                            stack.add(3, o)
+                            stack.add(4, o1)
+                        } else {
+                            stack.add(4, o)
+                            stack.add(5, o1)
+                        }
+                    }
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
