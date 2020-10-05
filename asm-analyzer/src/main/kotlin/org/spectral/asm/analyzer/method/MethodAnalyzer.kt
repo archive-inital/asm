@@ -30,6 +30,7 @@ import org.spectral.asm.analyzer.util.PrimitiveUtils
 import org.spectral.asm.core.*
 import java.util.AbstractMap
 import kotlin.math.max
+import kotlin.reflect.KClass
 
 /**
  * Analyzes the method execution to create a data-flow graph.
@@ -143,6 +144,29 @@ object MethodAnalyzer {
     }
 
     /**
+     * Executes an array load operation.
+     *
+     * @param opcode Int
+     * @param stack MutableList<StackObject?>
+     * @param type KClass<*>
+     * @return Frame
+     */
+    private fun executeArrayLoad(opcode: Int, stack: MutableList<StackObject?>, type: KClass<*>): Frame {
+        val index = stack.removeAt(0)!!.value!!
+        val array = stack.removeAt(0)!!.value!!
+
+        val currentFrame = ArrayLoadFrame(opcode, index, array)
+
+        if(type == Any::class) {
+            stack.add(0, StackObject(type, currentFrame, "java/lang/Object"))
+        } else {
+            stack.add(0, StackObject(type, currentFrame))
+        }
+
+        return currentFrame
+    }
+
+    /**
      * Runs a method execution flow simulation with the provided arguments.
      *
      * @param method MethodNode
@@ -244,7 +268,14 @@ object MethodAnalyzer {
                     currentFrame = LocalFrame(insn.opcode, cast.`var`, local.value)
                     stack.add(0, local)
                 }
-                // TODO - Local Array Loading
+                IALOAD -> { currentFrame = executeArrayLoad(insn.opcode, stack, Int::class) }
+                LALOAD -> { currentFrame = executeArrayLoad(insn.opcode, stack, Long::class) }
+                FALOAD -> { currentFrame = executeArrayLoad(insn.opcode, stack, Float::class) }
+                DALOAD -> { currentFrame = executeArrayLoad(insn.opcode, stack, Double::class) }
+                AALOAD -> { currentFrame = executeArrayLoad(insn.opcode, stack, Any::class) }
+                BALOAD -> { currentFrame = executeArrayLoad(insn.opcode, stack, Byte::class) }
+                CALOAD -> { currentFrame = executeArrayLoad(insn.opcode, stack, Char::class) }
+                SALOAD -> { currentFrame = executeArrayLoad(insn.opcode, stack, Short::class) }
                 in ISTORE..ASTORE -> {
                     val cast = insn as VarInsnNode
                     val local = stack.removeAt(0)!!
