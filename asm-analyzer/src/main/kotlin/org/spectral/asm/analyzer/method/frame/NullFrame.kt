@@ -18,11 +18,8 @@
 
 package org.spectral.asm.analyzer.method.frame
 
-class LdcFrame(opcode: Int, val cst: Any?) : Frame(opcode) {
-
-    override val isConstant: Boolean = true
-
+class NullFrame : Frame(-1) {
     override fun toString(): String {
-        return "LDC_FRAME[$mnemonic, cst=$cst]"
+        return "NULL_FRAME"
     }
 }

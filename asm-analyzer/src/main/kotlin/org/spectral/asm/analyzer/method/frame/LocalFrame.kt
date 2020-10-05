@@ -18,11 +18,13 @@
 
 package org.spectral.asm.analyzer.method.frame
 
-class LdcFrame(opcode: Int, val cst: Any?) : Frame(opcode) {
+class LocalFrame(opcode: Int, val local: Int, val value: Frame?) : Frame(opcode) {
 
-    override val isConstant: Boolean = true
+    init {
+        this.value?.children?.add(this)
+    }
 
     override fun toString(): String {
-        return "LDC_FRAME[$mnemonic, cst=$cst]"
+        return "LOCAL_FRAME[$mnemonic, local=$local,value=$value]"
     }
 }

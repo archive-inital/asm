@@ -32,7 +32,7 @@ class AnalyzerResult {
     /**
      * The frame to instruction mapping.
      */
-    val mappings = mutableMapOf<Frame, AbstractInsnNode>()
+    var mappings: MutableMap<Frame, AbstractInsnNode>? = mutableMapOf<Frame, AbstractInsnNode>()
 
     /**
      * The reversed mapping for resolution speed.
