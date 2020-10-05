@@ -40,16 +40,10 @@ allprojects {
         repositories {
             maven {
                 url = uri("https://maven.pkg.github.com/spectral-powered/asm")
-            }
-        }
-
-        publications {
-            create<MavenPublication>("asm") {
-                groupId = "org.spectral"
-                artifactId = project.name
-                version = Project.version
-                from(components["java"])
-                artifact(sourcesJar.get())
+                credentials {
+                    username = System.getenv("MAVEN_USERNAME")
+                    password = System.getenv("MAVEN_TOKEN")
+                }
             }
         }
     }
