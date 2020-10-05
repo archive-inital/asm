@@ -167,6 +167,20 @@ object MethodAnalyzer {
     }
 
     /**
+     * Executes an array store operation.
+     *
+     * @param opcode Int
+     * @param stack MutableList<StackObject?>
+     * @return Frame
+     */
+    private fun executeArrayStore(opcode: Int, stack: MutableList<StackObject?>): Frame {
+        val value = stack.removeAt(0)!!.value!!
+        val index = stack.removeAt(0)!!.value!!
+        val array = stack.removeAt(0)!!.value!!
+        return ArrayStoreFrame(opcode, value, index, array)
+    }
+
+    /**
      * Runs a method execution flow simulation with the provided arguments.
      *
      * @param method MethodNode
@@ -283,7 +297,9 @@ object MethodAnalyzer {
                     assureSize(locals, cast.`var`)
                     locals[cast.`var`] = StackObject(local.type, currentFrame, local.initType)
                 }
-                // TODO - Local array storing
+                in IASTORE..AASTORE -> {
+                    currentFrame = executeArrayStore(insn.opcode, stack)
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
