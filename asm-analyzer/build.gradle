@@ -1,7 +1,0 @@
-apply plugin: 'java'
-
-description = "ASM Analyzer"
-
-dependencies {
-    api project(":asm-core")
-}

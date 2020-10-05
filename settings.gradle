@@ -1,5 +1,0 @@
-rootProject.name = 'asm'
-
-include ':asm-core'
-include ':asm-executor'
-include ':asm-analyzer'

@@ -1,5 +1,0 @@
-description = "ASM Executor"
-
-dependencies {
-    api project(":asm-core")
-}
