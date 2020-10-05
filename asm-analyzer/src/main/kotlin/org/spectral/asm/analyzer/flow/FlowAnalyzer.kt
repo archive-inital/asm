@@ -19,10 +19,7 @@
 package org.spectral.asm.analyzer.flow
 
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.tree.AbstractInsnNode
-import org.objectweb.asm.tree.LabelNode
-import org.objectweb.asm.tree.MethodNode
-import org.objectweb.asm.tree.TryCatchBlockNode
+import org.objectweb.asm.tree.*
 import java.util.AbstractMap
 
 /**
@@ -73,7 +70,94 @@ class FlowAnalyzer(val method: MethodNode) {
                     crashed = false
                     currentLabel = insn
                     labels.putIfAbsent(currentLabel!!, AbstractMap.SimpleEntry(mutableListOf(), mutableListOf()))
+
+                    /*
+                     * Account for try-catch blocks
+                     */
+                    method.tryCatchBlocks.forEach loop1@ { tryCatchBlock ->
+                        if(tryCatchBlock.start == currentLabel) {
+                            var insertBefore: TryCatchBlockNode? = null
+                            tryCatchNow.forEach loop2@ { tryCatchBlockNow ->
+                                if(method.tryCatchBlocks.indexOf(tryCatchBlockNow) > method.tryCatchBlocks.indexOf(tryCatchBlock)) {
+                                    insertBefore = tryCatchBlockNow
+                                    return@loop2
+                                }
+                            }
+
+                            if(insertBefore == null) {
+                                tryCatchNow.add(tryCatchBlock)
+                            } else {
+                                tryCatchNow.add(tryCatchNow.indexOf(insertBefore), tryCatchBlock)
+                            }
+                        }
+
+                        if(tryCatchBlock.end == currentLabel) {
+                            tryCatchNow.remove(tryCatchBlock)
+                        }
+                    }
+
+                    if(currentLabel != null) {
+                        tryCatchMap[currentLabel!!] = tryCatchNow.let { mutableListOf<TryCatchBlockNode>().apply { this.addAll(it) } }
+                    }
+
+                    /*
+                     * Continue
+                     */
+                    return@forEach
                 }
+
+                if(insn.opcode == Opcodes.GOTO || insn.opcode == Opcodes.TABLESWITCH || insn.opcode == Opcodes.LOOKUPSWITCH
+                        || (insn.opcode >= Opcodes.IRETURN && insn.opcode <= Opcodes.RETURN) || insn.opcode == Opcodes.ATHROW) {
+                    /*
+                     * These opcodes signal an execution termination of the current method frame.
+                     * Flag the control-flow block as crashed.
+                     */
+                    crashed = true
+
+                    if(currentLabel == null) {
+                        labels[ABSENT]!!.key.add(insn)
+                    } else {
+                        labels[currentLabel]!!.key.add(insn)
+                    }
+                }
+
+                /*
+                 * Build the flow graph of the label and tryCatch maps.
+                 */
+                labels.entries.forEach loop@ { entry ->
+                    entry.value.key.forEach { ain ->
+                        if(ain.opcode == Opcodes.GOTO) {
+                            entry.value.value.add(Triple((ain as JumpInsnNode).label, JumpData(JumpCause.GOTO, ain), 0))
+                            return@loop
+                        }
+                        else if(ain is JumpInsnNode) {
+                            entry.value.value.add(Triple((ain as JumpInsnNode).label, JumpData(JumpCause.CONDITIONAL, ain), 0))
+                        }
+                        else if(ain is TableSwitchInsnNode || ain is LookupSwitchInsnNode) {
+                            val jumps = if(ain is TableSwitchInsnNode) ain.labels else if(ain is LookupSwitchInsnNode) ain.labels else throw IllegalStateException()
+                            val defaultHandler = if(ain is TableSwitchInsnNode) ain.dflt else if(ain is TableSwitchInsnNode) ain.dflt else throw IllegalStateException()
+
+                            var i = 0
+                            for(label: LabelNode in jumps) {
+                                entry.value.value.add(Triple(label, JumpData(JumpCause.SWITCH, ain), i))
+                                i++
+                            }
+
+                            entry.value.value.add(Triple(defaultHandler, JumpData(JumpCause.SWITCH, ain), i))
+                            return@loop
+                        }
+                        else if((ain.opcode >= Opcodes.IRETURN && ain.opcode <= Opcodes.RETURN)
+                                || ain.opcode == Opcodes.ATHROW) {
+                            return@loop
+                        }
+                    }
+                }
+            }
+        }
+
+        labels.entries.forEach { entry ->
+            if(entry.value.value.isNotEmpty() && entry.value.value[0].second.cause == JumpCause.NEXT) {
+                entry.value.value.add(entry.value.value.removeAt(0))
             }
         }
 

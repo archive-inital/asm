@@ -13,8 +13,7 @@ This project contains multiple utilities as independent gradle modules. Each mod
 can be used separately. Below is an overview of the modules and a short description of 
 what they offer.
 
-- [![asm-core](https://img.shields.io/nexus/r/org.spectral/asm-core?label=asm-core&nexusVersion=3&server=https%3A%2F%2Frepo.spectralclient.org)]() -
-The core model used to load components of Java classes from either individual .class files
+- **asm-core** - The core model used to load components of Java classes from either individual .class files
 or from Jar files.
 
 - **asm-analyzer** - TODO - A basic simulation of a method to calculate data-flow and control-flow of a given method's
