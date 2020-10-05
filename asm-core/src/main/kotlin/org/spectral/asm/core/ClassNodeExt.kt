@@ -18,6 +18,7 @@
 
 package org.spectral.asm.core
 
+import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 import java.lang.reflect.Modifier
 
@@ -39,6 +40,14 @@ internal fun ClassNode.init() {
         method.owner = this
         method.init()
     }
+
+    /*
+     * Initialize all fields in the class.
+     */
+    this.fields.forEach { field ->
+        field.owner = this
+        field.init()
+    }
 }
 
 /**
@@ -53,6 +62,11 @@ var ClassNode.pool: ClassPool
             poolValues[this] = value
         }
     }
+
+/**
+ * The ASM [Type] of this class node.
+ */
+val ClassNode.type: Type get() = Type.getObjectType(this.name)
 
 /**
  * Whether the class node is an abstract class.

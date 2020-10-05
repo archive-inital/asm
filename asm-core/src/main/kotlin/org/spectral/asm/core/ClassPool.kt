@@ -153,6 +153,11 @@ class ClassPool {
 
             jar.close()
 
+            /*
+             * Initialize the pool
+             */
+            pool.init()
+
             return pool
         }
     }
