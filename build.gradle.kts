@@ -39,7 +39,7 @@ allprojects {
     publishing {
         repositories {
             maven {
-                url = uri("https://maven.pkg.github.com/spectral-powered/logger")
+                url = uri("https://maven.pkg.github.com/spectral-powered/asm")
             }
         }
 
