@@ -21,15 +21,16 @@ package org.spectral.asm.analyzer.method
 import com.google.common.collect.ListMultimap
 import com.google.common.collect.Multimap
 import com.google.common.collect.MultimapBuilder
+import com.google.common.primitives.Primitives
 import org.objectweb.asm.Opcodes.*
-import org.objectweb.asm.tree.AbstractInsnNode
-import org.objectweb.asm.tree.LabelNode
-import org.objectweb.asm.tree.MethodNode
-import org.objectweb.asm.tree.TryCatchBlockNode
+import org.objectweb.asm.Type
+import org.objectweb.asm.tree.*
 import org.spectral.asm.analyzer.method.frame.ArgumentFrame
 import org.spectral.asm.analyzer.method.frame.Frame
+import org.spectral.asm.analyzer.method.frame.LdcFrame
 import org.spectral.asm.analyzer.util.PrimitiveUtils
 import org.spectral.asm.core.*
+import kotlin.reflect.KClass
 
 /**
  * Analyzes the method execution to create a data-flow graph.
@@ -181,5 +182,64 @@ object MethodAnalyzer {
          * The successor instructions which branch this execution's control-flow.
          */
         val successors = mutableListOf<AbstractInsnNode>()
+
+        /*
+         * Loop forever. We will break out based on
+         * various conditionals.
+         */
+        while(true) {
+            /*
+             * Switch through the opcodes
+             */
+            when(insn.opcode) {
+                NOP -> frame = Frame(NOP)
+                ACONST_NULL -> {
+                    frame = LdcFrame(insn.opcode, null)
+                    stack.add(0, StackObject(Any::class, frame, "java/lang/Object"))
+                }
+                in ICONST_M1..ICONST_5 -> {
+                    frame = LdcFrame(insn.opcode, insn.opcode - 3)
+                    stack.add(0, StackObject(Int::class, frame))
+                }
+                in LCONST_0..LCONST_1 -> {
+                    frame = LdcFrame(insn.opcode, insn.opcode - 9)
+                    stack.add(0, StackObject(Long::class, frame))
+                }
+                in FCONST_0..FCONST_2 -> {
+                    frame = LdcFrame(insn.opcode, insn.opcode - 11)
+                    stack.add(0, StackObject(Float::class, frame))
+                }
+                in DCONST_0..DCONST_1 -> {
+                    frame = LdcFrame(insn.opcode, insn.opcode - 14)
+                    stack.add(0, StackObject(Double::class, frame))
+                }
+                BIPUSH -> {
+                    val cast = insn as IntInsnNode
+                    frame = LdcFrame(insn.opcode, cast.operand.toByte())
+                    stack.add(0, StackObject(Byte::class, frame))
+                }
+                SIPUSH -> {
+                    val cast = insn as IntInsnNode
+                    frame = LdcFrame(insn.opcode, cast.operand.toShort())
+                    stack.add(0, StackObject(Short::class, frame))
+                }
+                LDC -> {
+                    val cast = insn as LdcInsnNode
+                    frame = LdcFrame(insn.opcode, insn.cst)
+                    var unwrapped: Class<*> = Primitives.unwrap(cast.cst.javaClass)
+                    if(unwrapped == cast.cst.javaClass) {
+                        unwrapped = if(cast.cst is Type) {
+                            Class::class.java
+                        } else {
+                            cast.cst::class.java
+                        }
+                        stack.add(0, StackObject(Any::class, frame, Type.getType(unwrapped).internalName))
+                    } else {
+                        stack.add(0, StackObject(unwrapped.kotlin, frame))
+                    }
+                }
+                else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
+            }
+        }
     }
 }
