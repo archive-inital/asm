@@ -2,6 +2,7 @@ description = "ASM Analyzer"
 
 dependencies {
     api(project(":asm-core"))
+    implementation(Library.guava)
 }
 
 publishing {
