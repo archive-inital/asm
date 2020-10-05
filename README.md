@@ -1,4 +1,9 @@
 # Spectral ASM Library
+
+[![build](https://img.shields.io/github/workflow/status/spectral-powered/asm/build)](https://github.com/spectral-powered/asm/actions?query=workflow%3Abuild)
+[![release](https://img.shields.io/github/v/release/spectral-powered/asm?include_prereleases)](https://github.com/spectral-powered/asm/releases)
+[![license](https://img.shields.io/github/license/spectral-powered/asm)](https://github.com/spectral-powered/asm/blob/master/LICENSE.md)
+
 This library contains a simple to use ASM tree extension which loads and holds
 more information than the native ASM tree library. This is in use by the Spectral
 powered projects and is available as an independent gradle dependency.
@@ -8,7 +13,8 @@ This project contains multiple utilities as independent gradle modules. Each mod
 can be used separately. Below is an overview of the modules and a short description of 
 what they offer.
 
-- **asm-core** - The core model used to load components of Java classes from either individual .class files
+- [![asm-core](https://img.shields.io/nexus/r/org.spectral/asm-core?label=asm-core&nexusVersion=3&server=https%3A%2F%2Frepo.spectralclient.org)]() -
+The core model used to load components of Java classes from either individual .class files
 or from Jar files.
 
 - **asm-analyzer** - TODO - A basic simulation of a method to calculate data-flow and control-flow of a given method's
