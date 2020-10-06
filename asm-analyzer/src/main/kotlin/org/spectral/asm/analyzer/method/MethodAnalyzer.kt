@@ -568,6 +568,8 @@ object MethodAnalyzer {
                     successors.add(cast.label)
                     currentFrame = JumpFrame(insn.opcode, emptyList(), cast.label)
                 }
+                JSR -> { throw UnsupportedOperationException("JSR not supported in Java 1.8+") }
+                RET -> { throw UnsupportedOperationException("RET not supported in Java 1.8+") }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
