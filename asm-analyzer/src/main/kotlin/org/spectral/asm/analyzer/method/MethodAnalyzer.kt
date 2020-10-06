@@ -699,6 +699,13 @@ object MethodAnalyzer {
                     currentFrame = NewFrame(cast.desc)
                     stack.add(0, StackObject(currentFrame))
                 }
+                NEWARRAY -> {
+                    val size = stack.removeAt(0)!!.value!!
+                    val cast = insn as IntInsnNode
+                    currentFrame = NewArrayFrame(insn.opcode, PrimitiveUtils.forArrayId(cast.operand).simpleName, size)
+                    val desc = "[" + Type.getType(PrimitiveUtils.forArrayId(cast.operand).java).descriptor
+                    stack.add(0, StackObject(Any::class, currentFrame, desc))
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
