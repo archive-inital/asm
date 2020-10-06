@@ -19,7 +19,4 @@
 package org.spectral.asm.analyzer.method.frame
 
 class NullFrame : Frame(-1) {
-    override fun toString(): String {
-        return "NULL_FRAME"
-    }
 }

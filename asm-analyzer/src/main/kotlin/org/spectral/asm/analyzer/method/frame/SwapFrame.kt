@@ -18,8 +18,13 @@
 
 package org.spectral.asm.analyzer.method.frame
 
-class ArgumentFrame(opcode: Int, val local: Int) : Frame(opcode) {
+import org.objectweb.asm.Opcodes
 
-    override val isConstant: Boolean = false
+class SwapFrame(val top: Frame, val bottom: Frame) : Frame(Opcodes.SWAP) {
+
+    init {
+        top.children.add(this)
+        bottom.children.add(this)
+    }
 
 }

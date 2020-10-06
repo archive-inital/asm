@@ -22,7 +22,4 @@ class LdcFrame(opcode: Int, val cst: Any?) : Frame(opcode) {
 
     override val isConstant: Boolean = true
 
-    override fun toString(): String {
-        return "LDC_FRAME[$mnemonic, cst=$cst]"
-    }
 }

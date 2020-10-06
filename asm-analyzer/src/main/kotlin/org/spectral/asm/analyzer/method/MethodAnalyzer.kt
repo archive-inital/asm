@@ -388,6 +388,13 @@ object MethodAnalyzer {
                         }
                     }
                 }
+                SWAP -> {
+                    val top = stack.removeAt(0)!!
+                    val bottom = stack.removeAt(0)!!
+                    currentFrame = SwapFrame(top.value!!, bottom.value!!)
+                    stack.add(0, top)
+                    stack.add(0, bottom)
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }

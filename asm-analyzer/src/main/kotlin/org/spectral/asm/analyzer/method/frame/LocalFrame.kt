@@ -24,7 +24,4 @@ class LocalFrame(opcode: Int, val local: Int, val value: Frame?) : Frame(opcode)
         this.value?.children?.add(this)
     }
 
-    override fun toString(): String {
-        return "LOCAL_FRAME[$mnemonic, local=$local,value=$value]"
-    }
 }
