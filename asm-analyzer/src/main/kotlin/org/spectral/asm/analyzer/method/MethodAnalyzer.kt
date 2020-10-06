@@ -694,6 +694,11 @@ object MethodAnalyzer {
                         }
                     }
                 }
+                NEW -> {
+                    val cast = insn as TypeInsnNode
+                    currentFrame = NewFrame(cast.desc)
+                    stack.add(0, StackObject(currentFrame))
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }

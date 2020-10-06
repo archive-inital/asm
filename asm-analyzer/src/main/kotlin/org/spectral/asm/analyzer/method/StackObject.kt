@@ -20,6 +20,7 @@ package org.spectral.asm.analyzer.method
 
 import org.spectral.asm.analyzer.method.frame.ArgumentFrame
 import org.spectral.asm.analyzer.method.frame.Frame
+import org.spectral.asm.analyzer.method.frame.NewFrame
 import org.spectral.asm.analyzer.method.value.ValueType
 import kotlin.reflect.KClass
 
@@ -88,6 +89,17 @@ class StackObject(val type: KClass<*>, val value: Frame?, desc: String?) {
     constructor(frame: ArgumentFrame, type: String) : this(Any::class, frame, type) {
         this.isInitialized = false
         this.isThis = true
+    }
+
+    /**
+     * Creates a stack object from an [NewFrame] instance.
+     *
+     * @param frame NewFrame
+     * @constructor
+     */
+    constructor(frame: NewFrame) : this(Any::class, frame, frame.type) {
+        this.isInitialized = false
+        this.isThis = false
     }
 
     /**
