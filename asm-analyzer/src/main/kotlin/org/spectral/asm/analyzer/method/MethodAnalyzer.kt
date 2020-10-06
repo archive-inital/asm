@@ -677,6 +677,23 @@ object MethodAnalyzer {
                         }
                     }
                 }
+                INVOKEDYNAMIC -> {
+                    val cast = insn as InvokeDynamicInsnNode
+                    val type = Type.getReturnType(cast.desc)
+                    val typeClass = PrimitiveUtils.findPrimitive(type.className)
+                    val args = mutableListOf<Frame?>()
+                    Type.getArgumentTypes(cast.desc).forEach { _ ->
+                        args.add(0, stack.removeAt(0)!!.value)
+                    }
+                    currentFrame = MethodFrame(insn.opcode, "", cast.name, cast.desc, null, args)
+                    if(type.sort != Type.VOID) {
+                        if(typeClass == null) {
+                            stack.add(0, StackObject(Any::class, currentFrame, type.internalName))
+                        } else {
+                            stack.add(0, StackObject(typeClass, currentFrame))
+                        }
+                    }
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
