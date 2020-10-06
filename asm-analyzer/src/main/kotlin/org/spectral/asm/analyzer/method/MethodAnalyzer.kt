@@ -181,6 +181,37 @@ object MethodAnalyzer {
     }
 
     /**
+     * Execute an unary math operation on the stack.
+     *
+     * @param opcode Int
+     * @param stack MutableList<StackObject?>
+     * @param prim KClass<P>
+     * @return Frame
+     */
+    private fun <P : Any> doUnaryMath(opcode: Int, stack: MutableList<StackObject?>, prim: KClass<P>): Frame {
+        val target = stack.removeAt(0)!!.value!!
+        val currentFrame = MathFrame(opcode, target)
+        stack.add(0, StackObject(prim, currentFrame))
+        return currentFrame
+    }
+
+    /**
+     * Executes a binary math operation on the stack.
+     *
+     * @param opcode Int
+     * @param stack MutableList<StackObject?>
+     * @param prim KClass<P>
+     * @return Frame
+     */
+    private fun <P : Any> doBinaryMath(opcode: Int, stack: MutableList<StackObject?>, prim: KClass<P>): Frame {
+        val target1 = stack.removeAt(0)!!.value!!
+        val target2 = stack.removeAt(0)!!.value!!
+        val currentFrame = MathFrame(opcode, target1, target2)
+        stack.add(0, StackObject(prim, currentFrame))
+        return currentFrame
+    }
+
+    /**
      * Runs a method execution flow simulation with the provided arguments.
      *
      * @param method MethodNode
