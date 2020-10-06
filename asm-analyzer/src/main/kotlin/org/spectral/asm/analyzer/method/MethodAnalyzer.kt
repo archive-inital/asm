@@ -758,6 +758,19 @@ object MethodAnalyzer {
                 MONITORENTER, MONITOREXIT -> {
                     currentFrame = MonitorFrame(insn.opcode, stack.removeAt(0)!!.value!!)
                 }
+                MULTIANEWARRAY -> {
+                    val cast = insn as MultiANewArrayInsnNode
+                    val sizes = mutableListOf<Frame>()
+                    for(i in 0 until cast.dims) {
+                        sizes.add(0, stack.removeAt(0)!!.value!!)
+                    }
+                    currentFrame = MultiANewArrayFrame(sizes)
+                    var desc = cast.desc
+                    for(i in 0 until cast.dims) {
+                        desc = "[" + desc
+                    }
+                    stack.add(0, StackObject(Any::class, currentFrame, desc))
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
