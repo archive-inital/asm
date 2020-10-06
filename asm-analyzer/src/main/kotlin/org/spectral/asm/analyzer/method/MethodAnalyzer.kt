@@ -592,6 +592,38 @@ object MethodAnalyzer {
                     currentFrame = ReturnFrame(insn.opcode, null)
                     terminated = true
                 }
+                GETSTATIC -> {
+                    val cast = insn as FieldInsnNode
+                    val type = Type.getType(cast.desc)
+                    val typeClass = PrimitiveUtils.findPrimitive(type.className)
+                    currentFrame = FieldFrame(insn.opcode, cast.owner, cast.name, cast.desc, null, null)
+                    if(typeClass == null) {
+                        stack.add(0, StackObject(Any::class, currentFrame, type.internalName))
+                    } else {
+                        stack.add(0, StackObject(typeClass, currentFrame))
+                    }
+                }
+                PUTSTATIC -> {
+                    val cast = insn as FieldInsnNode
+                    currentFrame = FieldFrame(insn.opcode, cast.owner, cast.name, cast.desc, null, stack.removeAt(0)!!.value)
+                }
+                GETFIELD -> {
+                    val cast = insn as FieldInsnNode
+                    val type = Type.getType(cast.desc)
+                    val typeClass = PrimitiveUtils.findPrimitive(type.className)
+                    currentFrame = FieldFrame(insn.opcode, cast.owner, cast.name, cast.desc, stack.removeAt(0)!!.value, null)
+                    if(typeClass == null) {
+                        stack.add(0, StackObject(Any::class, currentFrame, type.internalName))
+                    } else {
+                        stack.add(0, StackObject(typeClass, currentFrame))
+                    }
+                }
+                PUTFIELD -> {
+                    val cast = insn as FieldInsnNode
+                    val value = stack.removeAt(0)!!.value
+                    val instance = stack.removeAt(0)!!.value
+                    currentFrame = FieldFrame(insn.opcode, cast.owner, cast.name, cast.desc, instance, value)
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
