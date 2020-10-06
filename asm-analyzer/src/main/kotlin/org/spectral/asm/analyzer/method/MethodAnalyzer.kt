@@ -624,7 +624,7 @@ object MethodAnalyzer {
                     val instance = stack.removeAt(0)!!.value
                     currentFrame = FieldFrame(insn.opcode, cast.owner, cast.name, cast.desc, instance, value)
                 }
-                INVOKEVIRTUAL -> {
+                INVOKEVIRTUAL, INVOKEINTERFACE -> {
                     val cast = insn as MethodInsnNode
                     val type = Type.getReturnType(cast.desc)
                     val typeClass = PrimitiveUtils.findPrimitive(type.className)
@@ -657,6 +657,23 @@ object MethodAnalyzer {
                             stack.add(0, StackObject(Any::class, currentFrame, type.internalName))
                         } else {
                             stack.add(0, StackObject(typeClass , currentFrame))
+                        }
+                    }
+                }
+                INVOKESTATIC -> {
+                    val cast = insn as MethodInsnNode
+                    val type = Type.getReturnType(cast.desc)
+                    val typeClass = PrimitiveUtils.findPrimitive(type.className)
+                    val args = mutableListOf<Frame?>()
+                    Type.getArgumentTypes(cast.desc).forEach { _ ->
+                        args.add(0, stack.removeAt(0)!!.value)
+                    }
+                    currentFrame = MethodFrame(insn.opcode, cast.owner, cast.name, cast.desc, null, args)
+                    if(type.sort != Type.VOID) {
+                        if(typeClass == null) {
+                            stack.add(0, StackObject(Any::class, currentFrame, type.internalName))
+                        } else {
+                            stack.add(0, StackObject(typeClass, currentFrame))
                         }
                     }
                 }
