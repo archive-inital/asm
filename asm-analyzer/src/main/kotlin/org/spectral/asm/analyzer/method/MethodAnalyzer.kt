@@ -563,6 +563,11 @@ object MethodAnalyzer {
                     successors.add(insn.next)
                     currentFrame = JumpFrame(insn.opcode, listOf(obj1, obj2), cast.label, insn.next)
                 }
+                GOTO -> {
+                    val cast = insn as JumpInsnNode
+                    successors.add(cast.label)
+                    currentFrame = JumpFrame(insn.opcode, emptyList(), cast.label)
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
