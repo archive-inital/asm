@@ -534,6 +534,35 @@ object MethodAnalyzer {
                 I2S -> {
                     currentFrame = doCast(insn.opcode, stack, Short::class)
                 }
+                IFEQ,
+                IFNE,
+                IFLT,
+                IFGE,
+                IFGT,
+                IFLE,
+                IFNULL,
+                IFNONNULL -> {
+                    val cast = insn as JumpInsnNode
+                    val obj = stack.removeAt(0)!!.value!!
+                    successors.add(cast.label)
+                    successors.add(insn.next)
+                    currentFrame = JumpFrame(insn.opcode, listOf(obj), cast.label, insn.next)
+                }
+                IF_ICMPEQ,
+                IF_ICMPNE,
+                IF_ICMPLT,
+                IF_ICMPGT,
+                IF_ICMPGE,
+                IF_ICMPLE,
+                IF_ACMPNE,
+                IF_ACMPEQ -> {
+                    val cast = insn as JumpInsnNode
+                    val obj1 = stack.removeAt(0)!!.value!!
+                    val obj2 = stack.removeAt(0)!!.value!!
+                    successors.add(cast.label)
+                    successors.add(insn.next)
+                    currentFrame = JumpFrame(insn.opcode, listOf(obj1, obj2), cast.label, insn.next)
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
