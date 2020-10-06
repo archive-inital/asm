@@ -706,6 +706,33 @@ object MethodAnalyzer {
                     val desc = "[" + Type.getType(PrimitiveUtils.forArrayId(cast.operand).java).descriptor
                     stack.add(0, StackObject(Any::class, currentFrame, desc))
                 }
+                ANEWARRAY -> {
+                    val size = stack.removeAt(0)!!.value!!
+                    val cast = insn as TypeInsnNode
+                    currentFrame = NewArrayFrame(insn.opcode, cast.desc, size)
+                    var desc: String? = null
+                    var type: Type
+                    try {
+                        /*
+                         * If the array is multidimensional, type is a descriptor.
+                         */
+                        type = Type.getType(cast.desc)
+                    } catch(ignored : Throwable) {
+                        /*
+                         * However if the array is a single dimension, type is an object type.
+                         *
+                         * This is especially bad if the object type is something like "LongHashMap" because the first
+                         * letter of the name "L" causes instruction descriptor conflicts.
+                         */
+                        type = Type.getObjectType(cast.desc)
+                    }
+                    if(type.sort == Type.ARRAY) {
+                        desc = type.descriptor
+                    } else {
+                        desc = "[" + type.descriptor + ";"
+                    }
+                    stack.add(0, StackObject(Any::class, currentFrame, desc))
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
