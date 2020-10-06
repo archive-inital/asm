@@ -20,7 +20,7 @@ import org.gradle.kotlin.dsl.DependencyHandlerScope
  */
 
 object Project {
-    const val version = "1.0.0"
+    const val version = "1.1.0"
     const val kotlinVersion = "1.4.10"
     const val gradleVersion = "6.6.1"
     val jvmVersion = JavaVersion.VERSION_11.toString()

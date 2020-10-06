@@ -46,10 +46,10 @@ Add the desired module as a gradle dependency to your gradle build file.
 ```groovy
 dependencies {
     // asm-core
-    implementation 'org.spectral:asm-core:1.0.0'
+    implementation 'org.spectral:asm-core:1.1.0'
 
     // asm-analyzer
-    implementation 'org.spectral:asm-analyzer:1.0.0'
+    implementation 'org.spectral:asm-analyzer:1.1.0'
 }
 ```
 
