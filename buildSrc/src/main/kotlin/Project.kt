@@ -20,7 +20,7 @@ import org.gradle.kotlin.dsl.DependencyHandlerScope
  */
 
 object Project {
-    const val version = "1.0.0"
+    const val version = "1.1.0"
     const val kotlinVersion = "1.4.10"
     const val gradleVersion = "6.6.1"
     val jvmVersion = JavaVersion.VERSION_11.toString()
@@ -33,6 +33,7 @@ object Plugin {
 object Library {
     private object Version {
         const val asm = "9.0-beta"
+        const val guava = "29.0-jre"
     }
 
     const val asm = "org.ow2.asm:asm:${Version.asm}"
@@ -40,6 +41,7 @@ object Library {
     const val asmCommons = "org.ow2.asm:asm-commons:${Version.asm}"
     const val asmTree = "org.ow2.asm:asm-tree:${Version.asm}"
     const val asmAnalysis = "org.ow2.asm:asm-analysis:${Version.asm}"
+    const val guava = "com.google.guava:guava:${Version.guava}"
 }
 
 fun DependencyHandlerScope.asm() {

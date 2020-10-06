@@ -13,11 +13,10 @@ This project contains multiple utilities as independent gradle modules. Each mod
 can be used separately. Below is an overview of the modules and a short description of 
 what they offer.
 
-- [![asm-core](https://img.shields.io/nexus/r/org.spectral/asm-core?label=asm-core&nexusVersion=3&server=https%3A%2F%2Frepo.spectralclient.org)]() -
-The core model used to load components of Java classes from either individual .class files
+- **asm-core** - The core model used to load components of Java classes from either individual .class files
 or from Jar files.
 
-- **asm-analyzer** - TODO - A basic simulation of a method to calculate data-flow and control-flow of a given method's
+- **asm-analyzer** - A basic simulation of a method to calculate data-flow and control-flow of a given method's
 execution. The actual value is not calculated but rather just value types pushed and popped from stack and from the
 LVT.
 
@@ -47,19 +46,10 @@ Add the desired module as a gradle dependency to your gradle build file.
 ```groovy
 dependencies {
     // asm-core
-    implementation 'org.spectral:asm-core:1.0.0'
+    implementation 'org.spectral:asm-core:1.1.0'
 
     // asm-analyzer
-    implementation 'org.spectral:asm-analyzer:1.0.0'
-
-    // asm-executor
-    implementation 'org.spectral:asm-executor:1.0.0'
-
-    // asm-remapper
-    implementation 'org.spectral:asm-remapper:1.0.0'
-
-    // asm-kotlin
-    implementation 'org.spectral:asm-kotlin:1.0.0'
+    implementation 'org.spectral:asm-analyzer:1.1.0'
 }
 ```
 
@@ -100,6 +90,35 @@ pool.classes.forEach { classNode ->
 pool.saveToJar(outputJar)
 ```
 
+#### Analyzer
+The following example is a basic usage of the method analyzer tool. For more information on how
+to use this tool, Please see the Spectral deobfuscator project.
+
+```kotlin
+/*
+* Get a class node instance from the class pool
+*/
+val myClass = pool.findClass("myClass")!!
+
+/*
+* Get a method node instance from the [myClass] class node.
+* 
+* The second argument is the ASM type string descriptor of the method.
+* Refer to the ASM documentation if you are confused.
+*/
+val myMethod = myClass.findMethod("myMethod", "()V")
+    
+/*
+* Analyze the method.
+*/
+val analysisResults = MethodAnalyzer.analyze(myMethod)
+
+/*
+* The resulting frame are stored in a Guava ListMultiMap instance.
+* You may need to add Guava as a dependency to iterate the results.
+*/
+println(analysisResults.frames.values())
+```
 ## Contributing
 Contributions are always welcome. Make sure to follow the guidelines for pull-requests and please make
 all pull-requests targeting the 'develop' branch, or the appropriate feature branch if one exists.
