@@ -570,6 +570,13 @@ object MethodAnalyzer {
                 }
                 JSR -> { throw UnsupportedOperationException("JSR not supported in Java 1.8+") }
                 RET -> { throw UnsupportedOperationException("RET not supported in Java 1.8+") }
+                TABLESWITCH -> {
+                    val frame = stack.removeAt(0)!!.value!!
+                    val cast = insn as TableSwitchInsnNode
+                    currentFrame = SwitchFrame(insn.opcode, frame, cast.labels, cast.dflt)
+                    successors.addAll(cast.labels)
+                    successors.add(cast.dflt)
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
