@@ -577,6 +577,14 @@ object MethodAnalyzer {
                     successors.addAll(cast.labels)
                     successors.add(cast.dflt)
                 }
+                in IRETURN..ARETURN -> {
+                    currentFrame = ReturnFrame(insn.opcode, stack.removeAt(0)!!.value)
+                    terminated = true
+                }
+                RETURN -> {
+                    currentFrame = ReturnFrame(insn.opcode, null)
+                    terminated = true
+                }
                 LOOKUPSWITCH -> {
                     val frame = stack.removeAt(0)!!.value!!
                     val cast = insn as LookupSwitchInsnNode
