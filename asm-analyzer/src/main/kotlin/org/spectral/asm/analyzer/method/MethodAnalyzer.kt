@@ -483,6 +483,12 @@ object MethodAnalyzer {
                 DNEG -> {
                     currentFrame = doUnaryMath(insn.opcode, stack, Double::class)
                 }
+                IINC -> {
+                    val cast = insn as IincInsnNode
+                    assureSize(locals, cast.`var`)
+                    val local = locals[cast.`var`]!!
+                    currentFrame = LocalFrame(insn.opcode, cast.`var`, local.value!!)
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
