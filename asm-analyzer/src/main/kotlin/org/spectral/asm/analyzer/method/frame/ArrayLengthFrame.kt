@@ -18,10 +18,13 @@
 
 package org.spectral.asm.analyzer.method.frame
 
-class NewArrayFrame(opcode: Int, val type: String?, val length: Frame) : Frame(opcode) {
+import org.objectweb.asm.Opcodes
+
+class ArrayLengthFrame(val length: Frame) : Frame(Opcodes.ARRAYLENGTH) {
 
     init {
         length.children.add(this)
+        this.parents.add(length)
     }
 
 }

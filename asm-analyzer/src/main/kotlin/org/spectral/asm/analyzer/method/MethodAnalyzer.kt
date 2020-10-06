@@ -733,6 +733,11 @@ object MethodAnalyzer {
                     }
                     stack.add(0, StackObject(Any::class, currentFrame, desc))
                 }
+                ARRAYLENGTH -> {
+                    val array = stack.removeAt(0)!!.value!!
+                    currentFrame = ArrayLengthFrame(array)
+                    stack.add(0, StackObject(Int::class, currentFrame))
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
