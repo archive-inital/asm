@@ -750,6 +750,11 @@ object MethodAnalyzer {
                     stack.add(0, obj)
                     currentFrame = CheckCastFrame(obj.value!!)
                 }
+                INSTANCEOF -> {
+                    val cast = insn as TypeInsnNode
+                    currentFrame = InstanceOfFrame(stack.removeAt(0)!!.value!!)
+                    stack.add(0, StackObject(Int::class, currentFrame))
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
