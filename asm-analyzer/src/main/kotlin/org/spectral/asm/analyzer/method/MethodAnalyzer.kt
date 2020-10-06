@@ -743,6 +743,13 @@ object MethodAnalyzer {
                     currentFrame = ThrowFrame(throwable)
                     terminated = true
                 }
+                CHECKCAST -> {
+                    val cast = insn as TypeInsnNode
+                    val obj = StackObject(Any::class, stack[0]!!.value, cast.desc)
+                    stack.removeAt(0)
+                    stack.add(0, obj)
+                    currentFrame = CheckCastFrame(obj.value!!)
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
