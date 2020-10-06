@@ -28,7 +28,8 @@ import org.spectral.asm.analyzer.method.frame.*
 import org.spectral.asm.analyzer.method.value.ValueType
 import org.spectral.asm.analyzer.util.PrimitiveUtils
 import org.spectral.asm.core.*
-import java.util.AbstractMap
+import java.util.*
+import kotlin.collections.HashSet
 import kotlin.math.max
 import kotlin.reflect.KClass
 
@@ -207,6 +208,21 @@ object MethodAnalyzer {
         val target1 = stack.removeAt(0)!!.value!!
         val target2 = stack.removeAt(0)!!.value!!
         val currentFrame = MathFrame(opcode, target1, target2)
+        stack.add(0, StackObject(prim, currentFrame))
+        return currentFrame
+    }
+
+    /**
+     * Executes a casting operation on the stack.
+     *
+     * @param opcode Int
+     * @param stack MutableList<StackObject?>
+     * @param prim KClass<*>
+     * @return Frame
+     */
+    private fun doCast(opcode: Int, stack: MutableList<StackObject?>, prim: KClass<*>): Frame {
+        val value = stack.removeAt(0)!!.value!!
+        val currentFrame = MathFrame(opcode, value)
         stack.add(0, StackObject(prim, currentFrame))
         return currentFrame
     }
@@ -488,6 +504,35 @@ object MethodAnalyzer {
                     assureSize(locals, cast.`var`)
                     val local = locals[cast.`var`]!!
                     currentFrame = LocalFrame(insn.opcode, cast.`var`, local.value!!)
+                }
+                I2L,
+                F2L,
+                D2L -> {
+                    currentFrame = doCast(insn.opcode, stack, Long::class)
+                }
+                I2F,
+                L2F,
+                D2F -> {
+                    currentFrame = doCast(insn.opcode, stack, Float::class)
+                }
+                I2D,
+                L2D,
+                F2D -> {
+                    currentFrame = doCast(insn.opcode, stack, Double::class)
+                }
+                L2I,
+                D2I,
+                F2I -> {
+                    currentFrame = doCast(insn.opcode, stack, Int::class)
+                }
+                I2B -> {
+                    currentFrame = doCast(insn.opcode, stack, Byte::class)
+                }
+                I2C -> {
+                    currentFrame = doCast(insn.opcode, stack, Char::class)
+                }
+                I2S -> {
+                    currentFrame = doCast(insn.opcode, stack, Short::class)
                 }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
