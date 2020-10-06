@@ -755,6 +755,9 @@ object MethodAnalyzer {
                     currentFrame = InstanceOfFrame(stack.removeAt(0)!!.value!!)
                     stack.add(0, StackObject(Int::class, currentFrame))
                 }
+                MONITORENTER, MONITOREXIT -> {
+                    currentFrame = MonitorFrame(insn.opcode, stack.removeAt(0)!!.value!!)
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
