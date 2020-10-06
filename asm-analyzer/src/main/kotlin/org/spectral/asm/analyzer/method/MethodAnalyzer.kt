@@ -577,6 +577,13 @@ object MethodAnalyzer {
                     successors.addAll(cast.labels)
                     successors.add(cast.dflt)
                 }
+                LOOKUPSWITCH -> {
+                    val frame = stack.removeAt(0)!!.value!!
+                    val cast = insn as LookupSwitchInsnNode
+                    currentFrame = SwitchFrame(insn.opcode, frame, cast.labels, cast.dflt)
+                    successors.addAll(cast.labels)
+                    successors.add(cast.dflt)
+                }
                 in IRETURN..ARETURN -> {
                     currentFrame = ReturnFrame(insn.opcode, stack.removeAt(0)!!.value)
                     terminated = true
@@ -584,13 +591,6 @@ object MethodAnalyzer {
                 RETURN -> {
                     currentFrame = ReturnFrame(insn.opcode, null)
                     terminated = true
-                }
-                LOOKUPSWITCH -> {
-                    val frame = stack.removeAt(0)!!.value!!
-                    val cast = insn as LookupSwitchInsnNode
-                    currentFrame = SwitchFrame(insn.opcode, frame, cast.labels, cast.dflt)
-                    successors.addAll(cast.labels)
-                    successors.add(cast.dflt)
                 }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
