@@ -738,6 +738,11 @@ object MethodAnalyzer {
                     currentFrame = ArrayLengthFrame(array)
                     stack.add(0, StackObject(Int::class, currentFrame))
                 }
+                ATHROW -> {
+                    val throwable = stack.removeAt(0)!!.value!!
+                    currentFrame = ThrowFrame(throwable)
+                    terminated = true
+                }
                 -1 -> { currentFrame = NullFrame() }
                 else -> throw RuntimeException("Unknown opcode ${insn.opcode}")
             }
